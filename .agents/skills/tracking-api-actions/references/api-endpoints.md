@@ -2,6 +2,14 @@
 
 Base URL default: `http://127.0.0.1:8000`
 
+Recommended bootstrap/status command:
+
+```bash
+./scripts/app_endpoint.py --mode auto --pretty
+```
+
+Use `api_base_url_local`/`api_base_url_lan` from that JSON output when calling endpoints.
+
 ## Read operations
 
 - `GET /api/default-month`

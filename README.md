@@ -94,6 +94,25 @@ npm --prefix dashboard run dev
 VITE_API_BASE_URL=http://192.168.15.17:8000 npm --prefix dashboard run dev -- --host 0.0.0.0 --port 5173
 ```
 
+## Agent endpoint launcher/status
+
+Use one script to either start missing services with `nohup` or just inspect running endpoints:
+
+```bash
+# Auto mode: starts API/frontend if missing, then prints connection JSON
+./scripts/app_endpoint.py --mode auto --pretty
+
+# Status mode: only checks and prints current connection JSON
+./scripts/app_endpoint.py --mode status --pretty
+```
+
+The output includes:
+
+- `agent_connection.dashboard_url_local`
+- `agent_connection.dashboard_url_lan`
+- `agent_connection.api_base_url_local`
+- `agent_connection.api_base_url_lan`
+
 ## Workbook generation
 
 ```bash

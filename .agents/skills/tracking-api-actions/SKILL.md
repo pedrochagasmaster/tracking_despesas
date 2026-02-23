@@ -12,13 +12,18 @@ Prefer the bundled script for reliability, then inspect results and report exact
 
 ## Quick Start
 
-1. Ensure API is running (default: `http://127.0.0.1:8000`).
-2. Run `scripts/api_action.py` with the needed action.
-3. Return parsed results and next recommended action.
+1. Ensure endpoints are ready with repository script:
+   - `./scripts/app_endpoint.py --mode auto --pretty`
+   - `auto`: starts missing services with `nohup`
+   - `status`: only inspects and prints connection details
+2. Use `api_base_url_local` or `api_base_url_lan` from script output.
+3. Run `scripts/api_action.py` with the needed action.
+4. Return parsed results and next recommended action.
 
 Examples:
 
 ```bash
+./scripts/app_endpoint.py --mode auto --pretty
 python scripts/api_action.py default-month
 python scripts/api_action.py summary --month 2026-02
 python scripts/api_action.py subscriptions
@@ -56,6 +61,7 @@ After any write operation, run a related read action to verify persisted results
 - Treat write calls as persistent mutations; confirm intent if the request is ambiguous.
 - On API errors, include status code and response body in the output.
 - For bulk updates, run small batches and verify each batch with read calls.
+- If API is not reachable, run `./scripts/app_endpoint.py --mode auto --no-ui --pretty` and retry.
 
 ## Batch operations
 
@@ -75,6 +81,7 @@ Use dry-run first for safety, then execute.
 - Batch payload format: `references/batch-format.md`
 - Single-action executor: `scripts/api_action.py`
 - Batch executor: `scripts/api_batch.py`
+- Endpoint bootstrap/status: `scripts/app_endpoint.py`
 
 Load `references/api-endpoints.md` for endpoint payload details.
 Load `references/batch-format.md` when preparing bulk operation files.
