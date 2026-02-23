@@ -65,7 +65,7 @@ python expense_cli.py run-subscriptions --month 2026-02
 python expense_cli.py add-installment --description "Notebook" --category Eletronicos --total-amount 2400 --installments 12 --start-date 2026-02-15
 
 # Budget and analytics
-python expense_cli.py set-budget --month 2026-02 --category Moradia --amount 1300
+python expense_cli.py set-budget --category Moradia --amount 1300
 python expense_cli.py report-month --month 2026-02
 python expense_cli.py report-trends --months 6
 python expense_cli.py report-savings --month 2026-02 --target-rate 20
@@ -93,6 +93,22 @@ npm --prefix dashboard run dev
 # Force a specific API URL
 VITE_API_BASE_URL=http://192.168.15.17:8000 npm --prefix dashboard run dev -- --host 0.0.0.0 --port 5173
 ```
+
+### Mobile curation flow (CSV keep + category)
+
+After preparing `nubank_csv_attachments_last24h/combined_transactions_deduped.csv`, open the dashboard page:
+
+- `http://<host>:5173/curation` (frontend dev server)
+
+This page:
+
+- Loads only kept rows by default (or pending uncategorized rows).
+- Lets you select which CSV file to curate (dropdown).
+- Uses categories from the `Orçamento` tab data (table `budgets` in `expenses.db`).
+- Lets you recategorize kept rows and drop additional rows (`keep=false`).
+- Can import kept+categorized rows directly into `expenses` (month inferred from each transaction date).
+- Exports a final filtered file via the API:
+  - `nubank_csv_attachments_last24h/combined_transactions_deduped_keep_categorized.csv`
 
 ## Agent endpoint launcher/status
 
@@ -125,6 +141,22 @@ This generates:
 
 - `Orcamento_Robusto_Template.xlsx`
 - `Orcamento_Robusto_Preenchido.xlsx`
+
+## CSV transaction curation
+
+After generating a merged CSV, you can interactively mark which transactions to keep:
+
+```bash
+python scripts/curate_transactions_csv.py \
+  --file nubank_csv_attachments_last24h/combined_transactions_deduped.csv
+```
+
+This adds/updates a boolean `keep` column (`true` or `false`) directly in the file.
+
+Useful flags:
+
+- `--show-all`: review rows even if `keep` is already set.
+- `--start-at N`: start at a specific 1-based row.
 
 ## Notes
 

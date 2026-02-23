@@ -20,6 +20,36 @@ Prefer the bundled script for reliability, then inspect results and report exact
 3. Run `scripts/api_action.py` with the needed action.
 4. Return parsed results and next recommended action.
 
+## External Agent (Different Directory)
+
+If the agent is running from another working directory, always use absolute paths or `uv --project`.
+
+Assume project root:
+- `/home/pedro/my_project_dir/tracking_despesas`
+
+Bootstrap/status from anywhere:
+
+```bash
+/home/pedro/my_project_dir/tracking_despesas/scripts/app_endpoint.py --mode auto --pretty
+```
+
+Run CLI entrypoint from anywhere:
+
+```bash
+uv run --project /home/pedro/my_project_dir/tracking_despesas tracking-despesas --help
+```
+
+Run API action script from anywhere:
+
+```bash
+python /home/pedro/my_project_dir/tracking_despesas/.agents/skills/tracking-api-actions/scripts/api_action.py summary --month 2027-01
+```
+
+Preferred integration flow for external agents:
+1. Run `app_endpoint.py --mode status|auto`.
+2. Read `agent_connection.api_base_url_local` or `agent_connection.api_base_url_lan`.
+3. Call HTTP endpoints using that base URL.
+
 Examples:
 
 ```bash
@@ -51,7 +81,11 @@ Use write actions when user asks to add/update financial records through API.
 - `add-expense --expense-date YYYY-MM-DD --amount N --category TEXT --description TEXT`
 - `add-income --income-date YYYY-MM-DD --amount N --category TEXT --description TEXT`
 - `add-subscription --name TEXT --amount N --category TEXT --frequency monthly|yearly [--start-date YYYY-MM-DD]`
-- `set-budget --month YYYY-MM --category TEXT --amount N`
+- `set-budget --category TEXT --amount N`
+- `update-expense --id N --expense-date YYYY-MM-DD --amount N --category TEXT --description TEXT`
+- `delete-expense --id N`
+- `update-budget --category TEXT --amount N`
+- `delete-budget --category TEXT`
 
 After any write operation, run a related read action to verify persisted results.
 
@@ -62,6 +96,7 @@ After any write operation, run a related read action to verify persisted results
 - On API errors, include status code and response body in the output.
 - For bulk updates, run small batches and verify each batch with read calls.
 - If API is not reachable, run `./scripts/app_endpoint.py --mode auto --no-ui --pretty` and retry.
+- For expense edit/delete, only records with `kind=one_off` are mutable. Subscriptions/parcelados are protected.
 
 ## Batch operations
 

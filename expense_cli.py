@@ -104,10 +104,9 @@ def init_db(conn: sqlite3.Connection) -> None:
 
         CREATE TABLE IF NOT EXISTS budgets (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            budget_month TEXT NOT NULL,
             category TEXT NOT NULL,
             amount REAL NOT NULL CHECK(amount >= 0),
-            UNIQUE(budget_month, category)
+            UNIQUE(category)
         );
 
         CREATE TABLE IF NOT EXISTS incomes (
@@ -120,7 +119,41 @@ def init_db(conn: sqlite3.Connection) -> None:
         );
         """
     )
+    _migrate_budgets_to_global(conn)
     conn.commit()
+
+
+def _migrate_budgets_to_global(conn: sqlite3.Connection) -> None:
+    cols = conn.execute("PRAGMA table_info(budgets)").fetchall()
+    col_names = {str(col["name"]) for col in cols}
+    if "budget_month" not in col_names:
+        return
+
+    conn.executescript(
+        """
+        CREATE TABLE budgets_new (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            category TEXT NOT NULL,
+            amount REAL NOT NULL CHECK(amount >= 0),
+            UNIQUE(category)
+        );
+
+        INSERT INTO budgets_new (category, amount)
+        SELECT b.category, b.amount
+        FROM budgets b
+        JOIN (
+            SELECT category, MAX(budget_month) AS latest_month
+            FROM budgets
+            GROUP BY category
+        ) latest
+          ON latest.category = b.category
+         AND latest.latest_month = b.budget_month
+        WHERE trim(coalesce(b.category, '')) <> '';
+
+        DROP TABLE budgets;
+        ALTER TABLE budgets_new RENAME TO budgets;
+        """
+    )
 
 
 def add_expense(conn: sqlite3.Connection, args: argparse.Namespace) -> None:
@@ -295,18 +328,17 @@ def add_installment(conn: sqlite3.Connection, args: argparse.Namespace) -> None:
 
 
 def set_budget(conn: sqlite3.Connection, args: argparse.Namespace) -> None:
-    _ = parse_month(args.month)
     conn.execute(
         """
-        INSERT INTO budgets (budget_month, category, amount)
-        VALUES (?, ?, ?)
-        ON CONFLICT(budget_month, category)
+        INSERT INTO budgets (category, amount)
+        VALUES (?, ?)
+        ON CONFLICT(category)
         DO UPDATE SET amount = excluded.amount
         """,
-        (args.month, args.category.strip(), args.amount),
+        (args.category.strip(), args.amount),
     )
     conn.commit()
-    print(f"Budget set for {args.month} / {args.category}: ${args.amount:.2f}")
+    print(f"Budget set for {args.category}: ${args.amount:.2f}")
 
 
 def month_incomes(conn: sqlite3.Connection, month: MonthWindow) -> list[sqlite3.Row]:
@@ -532,10 +564,7 @@ def report_month(conn: sqlite3.Connection, args: argparse.Namespace) -> None:
     net = earned - spent
     savings_rate = (net / earned * 100.0) if earned > 0 else 0.0
 
-    budget_rows = conn.execute(
-        "SELECT category, amount FROM budgets WHERE budget_month = ?",
-        (args.month,),
-    ).fetchall()
+    budget_rows = conn.execute("SELECT category, amount FROM budgets").fetchall()
     budget_map = {r["category"]: float(r["amount"]) for r in budget_rows}
 
     print(f"Month: {args.month}")
@@ -620,10 +649,7 @@ def report_savings(conn: sqlite3.Connection, args: argparse.Namespace) -> None:
             f"reduce expenses or raise income by {print_currency(max(gap, 0.0))}."
         )
 
-    budget_rows = conn.execute(
-        "SELECT category, amount FROM budgets WHERE budget_month = ?",
-        (args.month,),
-    ).fetchall()
+    budget_rows = conn.execute("SELECT category, amount FROM budgets").fetchall()
     budget_map = {r["category"]: float(r["amount"]) for r in budget_rows}
 
     over_budget = []
@@ -708,11 +734,9 @@ def list_data(conn: sqlite3.Connection, args: argparse.Namespace) -> None:
                 f"({row['category']}) start={row['start_date']} active={bool(row['active'])}"
             )
     elif args.entity == "budgets":
-        rows = conn.execute(
-            "SELECT * FROM budgets ORDER BY budget_month DESC, category ASC"
-        ).fetchall()
+        rows = conn.execute("SELECT * FROM budgets ORDER BY category ASC").fetchall()
         for row in rows:
-            print(f"{row['budget_month']} {row['category']} {print_currency(row['amount'])}")
+            print(f"{row['category']} {print_currency(row['amount'])}")
     elif args.entity == "incomes":
         rows = conn.execute(
             "SELECT * FROM incomes ORDER BY income_date DESC, id DESC LIMIT ?", (args.limit,)
@@ -772,8 +796,7 @@ def build_parser() -> argparse.ArgumentParser:
     add_inst.add_argument("--start-date", default=date.today().isoformat(), help="YYYY-MM-DD")
     add_inst.set_defaults(func=add_installment)
 
-    budget = sub.add_parser("set-budget", help="Set budget for month/category")
-    budget.add_argument("--month", required=True, help="YYYY-MM")
+    budget = sub.add_parser("set-budget", help="Set budget for category")
     budget.add_argument("--category", required=True)
     budget.add_argument("--amount", type=float, required=True)
     budget.set_defaults(func=set_budget)

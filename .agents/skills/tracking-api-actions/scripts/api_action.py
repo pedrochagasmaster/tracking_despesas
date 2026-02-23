@@ -73,9 +73,25 @@ def build_parser() -> argparse.ArgumentParser:
     asub.add_argument("--start-date")
 
     sb = sub.add_parser("set-budget")
-    sb.add_argument("--month", required=True)
     sb.add_argument("--category", required=True)
     sb.add_argument("--amount", type=float, required=True)
+
+    ue = sub.add_parser("update-expense")
+    ue.add_argument("--id", type=int, required=True)
+    ue.add_argument("--expense-date", required=True)
+    ue.add_argument("--amount", type=float, required=True)
+    ue.add_argument("--category", required=True)
+    ue.add_argument("--description", required=True)
+
+    de = sub.add_parser("delete-expense")
+    de.add_argument("--id", type=int, required=True)
+
+    ub = sub.add_parser("update-budget")
+    ub.add_argument("--category", required=True)
+    ub.add_argument("--amount", type=float, required=True)
+
+    db = sub.add_parser("delete-budget")
+    db.add_argument("--category", required=True)
 
     return p
 
@@ -135,11 +151,33 @@ def main() -> int:
         res = request("POST", args.base, "/api/subscriptions", body=body)
     elif a == "set-budget":
         body = {
-            "month": args.month,
             "category": args.category,
             "amount": args.amount,
         }
         res = request("POST", args.base, "/api/budgets", body=body)
+    elif a == "update-expense":
+        body = {
+            "expense_date": args.expense_date,
+            "amount": args.amount,
+            "category": args.category,
+            "description": args.description,
+        }
+        res = request("PUT", args.base, f"/api/expenses/{args.id}", body=body)
+    elif a == "delete-expense":
+        res = request("DELETE", args.base, f"/api/expenses/{args.id}")
+    elif a == "update-budget":
+        body = {
+            "category": args.category,
+            "amount": args.amount,
+        }
+        res = request("PUT", args.base, "/api/budgets", body=body)
+    elif a == "delete-budget":
+        res = request(
+            "DELETE",
+            args.base,
+            "/api/budgets",
+            {"category": args.category},
+        )
     else:
         raise SystemExit(f"Unsupported action: {a}")
 

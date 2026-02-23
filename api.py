@@ -2,7 +2,9 @@
 """FastAPI bridge for the expense tracking dashboard."""
 from __future__ import annotations
 
+import csv
 import sqlite3
+import threading
 from collections import defaultdict
 from datetime import date, datetime
 from pathlib import Path
@@ -13,6 +15,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 DB_PATH = Path(__file__).parent / "expenses.db"
+ROOT_PATH = Path(__file__).parent
+DEFAULT_CURATION_CSV = ROOT_PATH / "nubank_csv_attachments_last24h" / "combined_transactions_deduped.csv"
+_BUDGET_MIGRATION_LOCK = threading.Lock()
+_BUDGET_MIGRATED = False
 
 app = FastAPI(title="Tracking Despesas API")
 
@@ -28,6 +34,7 @@ def get_conn() -> sqlite3.Connection:
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
+    _migrate_budgets_to_global_once(conn)
     return conn
 
 
@@ -65,8 +72,6 @@ def latest_data_month() -> str:
             SELECT MAX(expense_date) AS dt FROM expenses
             UNION ALL
             SELECT MAX(income_date) AS dt FROM incomes
-            UNION ALL
-            SELECT MAX(budget_month || '-01') AS dt FROM budgets
         )
         """
     ).fetchone()
@@ -77,20 +82,162 @@ def latest_data_month() -> str:
     return str(latest)[:7]
 
 
-def latest_budget_month() -> str:
+def _migrate_budgets_to_global_once(conn: sqlite3.Connection) -> None:
+    global _BUDGET_MIGRATED
+    if _BUDGET_MIGRATED:
+        return
+    with _BUDGET_MIGRATION_LOCK:
+        if _BUDGET_MIGRATED:
+            return
+        _migrate_budgets_to_global(conn)
+        _BUDGET_MIGRATED = True
+
+
+def _migrate_budgets_to_global(conn: sqlite3.Connection) -> None:
+    cols = conn.execute("PRAGMA table_info(budgets)").fetchall()
+    if not cols:
+        return
+    col_names = {str(col["name"]) for col in cols}
+    if "budget_month" not in col_names:
+        return
+    conn.executescript(
+        """
+        DROP TABLE IF EXISTS budgets_new;
+
+        CREATE TABLE budgets_new (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            category TEXT NOT NULL,
+            amount REAL NOT NULL CHECK(amount >= 0),
+            UNIQUE(category)
+        );
+
+        INSERT INTO budgets_new (category, amount)
+        SELECT b.category, b.amount
+        FROM budgets b
+        JOIN (
+            SELECT category, MAX(budget_month) AS latest_month
+            FROM budgets
+            GROUP BY category
+        ) latest
+          ON latest.category = b.category
+         AND latest.latest_month = b.budget_month
+        WHERE trim(coalesce(b.category, '')) <> '';
+
+        DROP TABLE budgets;
+        ALTER TABLE budgets_new RENAME TO budgets;
+        """
+    )
+    conn.commit()
+
+
+def _normalize_keep(value: Any) -> bool:
+    text = str(value or "").strip().lower()
+    return text in {"1", "true", "yes", "y", "sim", "s"}
+
+
+def _resolve_csv_path(file_path: str | None) -> Path:
+    if not file_path:
+        target = DEFAULT_CURATION_CSV
+        if not target.exists():
+            csv_files = _list_curation_csv_files()
+            if not csv_files:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"CSV not found: {DEFAULT_CURATION_CSV}",
+                )
+            target = ROOT_PATH / csv_files[0]
+    else:
+        target = Path(file_path)
+    if not target.is_absolute():
+        target = ROOT_PATH / target
+    resolved = target.resolve()
+    if resolved.suffix.lower() != ".csv":
+        raise HTTPException(status_code=400, detail="Only CSV files are supported")
+    try:
+        resolved.relative_to(ROOT_PATH.resolve())
+    except ValueError:
+        raise HTTPException(status_code=400, detail="File path must be inside project root")
+    if not resolved.exists():
+        raise HTTPException(status_code=404, detail=f"CSV not found: {resolved}")
+    return resolved
+
+
+def _list_curation_csv_files() -> list[str]:
+    ignored_dirs = {
+        ".git",
+        ".venv",
+        "node_modules",
+        "__pycache__",
+        "dist",
+        "build",
+    }
+    files: list[str] = []
+    for path in ROOT_PATH.rglob("*.csv"):
+        rel = path.relative_to(ROOT_PATH)
+        if any(part in ignored_dirs for part in rel.parts):
+            continue
+        files.append(str(rel))
+    return sorted(files)
+
+
+def _load_budget_categories() -> list[str]:
     conn = get_conn()
-    row = conn.execute("SELECT MAX(budget_month) AS latest FROM budgets").fetchone()
+    rows = conn.execute(
+        """
+        SELECT DISTINCT category
+        FROM budgets
+        WHERE trim(coalesce(category, '')) <> ''
+        ORDER BY category
+        """
+    ).fetchall()
     conn.close()
-    latest = row["latest"] if row else None
-    if not latest:
-        return latest_data_month()
-    return str(latest)[:7]
+    return [str(row["category"]).strip() for row in rows]
+
+
+def _read_curation_csv(csv_path: Path) -> tuple[list[str], list[dict[str, str]]]:
+    with csv_path.open("r", encoding="utf-8-sig", newline="") as handle:
+        reader = csv.DictReader(handle)
+        if not reader.fieldnames:
+            raise HTTPException(status_code=400, detail=f"CSV header missing: {csv_path}")
+        fieldnames = list(reader.fieldnames)
+        rows = list(reader)
+
+    for column in ("keep", "categoria_orcamento"):
+        if column not in fieldnames:
+            fieldnames.append(column)
+            for row in rows:
+                row[column] = ""
+        else:
+            for row in rows:
+                row[column] = row.get(column, "")
+    return fieldnames, rows
+
+
+def _write_curation_csv(csv_path: Path, fieldnames: list[str], rows: list[dict[str, str]]) -> None:
+    temp_path = csv_path.with_suffix(csv_path.suffix + ".tmp")
+    with temp_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+    temp_path.replace(csv_path)
+
+
+def _parse_curation_amount(raw: Any) -> float | None:
+    text = str(raw or "").strip()
+    if not text:
+        return None
+    normalized = text.replace(",", "")
+    try:
+        return float(normalized)
+    except ValueError:
+        return None
 
 
 # ── Metadata ───────────────────────────────────────────────────────────────────
 @app.get("/api/default-month")
 def default_month():
-    return {"month": latest_data_month(), "budgets_month": latest_budget_month()}
+    month = latest_data_month()
+    return {"month": month, "budgets_month": month}
 
 
 # ── Summary ────────────────────────────────────────────────────────────────────
@@ -193,9 +340,7 @@ def budgets(month: str = Query(default=None)):
         month = current_month()
     start, end = parse_month(month)
     conn = get_conn()
-    budget_rows = conn.execute(
-        "SELECT category, amount FROM budgets WHERE budget_month = ?", (month,)
-    ).fetchall()
+    budget_rows = conn.execute("SELECT category, amount FROM budgets").fetchall()
     expense_rows = conn.execute(
         "SELECT category, amount FROM expenses WHERE expense_date >= ? AND expense_date <= ?",
         (start.isoformat(), end.isoformat()),
@@ -273,6 +418,21 @@ class ExpenseIn(BaseModel):
     description: str
 
 
+def _editable_expense_or_404(conn: sqlite3.Connection, expense_id: int) -> sqlite3.Row:
+    row = conn.execute(
+        "SELECT id, kind FROM expenses WHERE id = ?",
+        (expense_id,),
+    ).fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="Expense not found")
+    if row["kind"] != "one_off":
+        raise HTTPException(
+            status_code=400,
+            detail="Only one-off expenses can be edited or deleted",
+        )
+    return row
+
+
 @app.post("/api/expenses")
 def add_expense(body: ExpenseIn):
     conn = get_conn()
@@ -280,6 +440,33 @@ def add_expense(body: ExpenseIn):
         "INSERT INTO expenses (expense_date, amount, description, category, kind) VALUES (?, ?, ?, ?, 'one_off')",
         (body.expense_date, body.amount, body.description.strip(), body.category.strip()),
     )
+    conn.commit()
+    conn.close()
+    return {"status": "ok"}
+
+
+@app.put("/api/expenses/{expense_id}")
+def update_expense(expense_id: int, body: ExpenseIn):
+    conn = get_conn()
+    _editable_expense_or_404(conn, expense_id)
+    conn.execute(
+        """
+        UPDATE expenses
+        SET expense_date = ?, amount = ?, description = ?, category = ?
+        WHERE id = ?
+        """,
+        (body.expense_date, body.amount, body.description.strip(), body.category.strip(), expense_id),
+    )
+    conn.commit()
+    conn.close()
+    return {"status": "ok"}
+
+
+@app.delete("/api/expenses/{expense_id}")
+def delete_expense(expense_id: int):
+    conn = get_conn()
+    _editable_expense_or_404(conn, expense_id)
+    conn.execute("DELETE FROM expenses WHERE id = ?", (expense_id,))
     conn.commit()
     conn.close()
     return {"status": "ok"}
@@ -329,7 +516,6 @@ def add_subscription(body: SubscriptionIn):
 
 # ── POST: Set budget ──────────────────────────────────────────────────────────────
 class BudgetIn(BaseModel):
-    month: str
     category: str
     amount: float
 
@@ -338,10 +524,247 @@ class BudgetIn(BaseModel):
 def set_budget(body: BudgetIn):
     conn = get_conn()
     conn.execute(
-        """INSERT INTO budgets (budget_month, category, amount) VALUES (?, ?, ?)
-           ON CONFLICT(budget_month, category) DO UPDATE SET amount = excluded.amount""",
-        (body.month, body.category.strip(), body.amount),
+        """INSERT INTO budgets (category, amount) VALUES (?, ?)
+           ON CONFLICT(category) DO UPDATE SET amount = excluded.amount""",
+        (body.category.strip(), body.amount),
     )
     conn.commit()
     conn.close()
     return {"status": "ok"}
+
+
+@app.put("/api/budgets")
+def update_budget(body: BudgetIn):
+    conn = get_conn()
+    cur = conn.execute(
+        """
+        UPDATE budgets
+        SET amount = ?
+        WHERE category = ?
+        """,
+        (body.amount, body.category.strip()),
+    )
+    if cur.rowcount == 0:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Budget not found")
+    conn.commit()
+    conn.close()
+    return {"status": "ok"}
+
+
+@app.delete("/api/budgets")
+def delete_budget(category: str = Query(...)):
+    conn = get_conn()
+    cur = conn.execute(
+        "DELETE FROM budgets WHERE category = ?",
+        (category.strip(),),
+    )
+    if cur.rowcount == 0:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Budget not found")
+    conn.commit()
+    conn.close()
+    return {"status": "ok"}
+
+
+# ── CSV Curation (mobile-friendly transaction triage) ─────────────────────────
+@app.get("/api/curation/meta")
+def curation_meta(file: str | None = Query(default=None)):
+    csv_path = _resolve_csv_path(file)
+    categories = _load_budget_categories()
+    return {
+        "csv_file": str(csv_path.relative_to(ROOT_PATH)),
+        "available_csv_files": _list_curation_csv_files(),
+        "categories": categories,
+    }
+
+
+@app.get("/api/curation/transactions")
+def curation_transactions(
+    file: str | None = Query(default=None),
+    view: str = Query(default="keep"),
+    limit: int = Query(default=250, ge=1, le=2000),
+):
+    csv_path = _resolve_csv_path(file)
+    _, rows = _read_curation_csv(csv_path)
+
+    items: list[dict[str, Any]] = []
+    for row_id, row in enumerate(rows, start=1):
+        keep = _normalize_keep(row.get("keep"))
+        category = (row.get("categoria_orcamento") or "").strip()
+        text = (row.get("title") or row.get("description") or "").strip()
+
+        item = {
+            "row_id": row_id,
+            "keep": keep,
+            "categoria_orcamento": category,
+            "date": row.get("date", ""),
+            "amount": row.get("amount", ""),
+            "schema_type": row.get("schema_type", ""),
+            "title": row.get("title", ""),
+            "description": row.get("description", ""),
+            "source_file": row.get("source_file", ""),
+            "preview": text,
+        }
+        items.append(item)
+
+    if view == "keep":
+        items = [item for item in items if item["keep"]]
+    elif view == "uncategorized":
+        items = [item for item in items if item["keep"] and not item["categoria_orcamento"]]
+    elif view != "all":
+        raise HTTPException(status_code=400, detail="view must be one of: keep, uncategorized, all")
+
+    return {
+        "view": view,
+        "total": len(items),
+        "items": items[:limit],
+    }
+
+
+class CurationUpdateRow(BaseModel):
+    row_id: int
+    keep: bool | None = None
+    categoria_orcamento: str | None = None
+
+
+class CurationUpdatePayload(BaseModel):
+    file: str | None = None
+    updates: list[CurationUpdateRow]
+
+
+@app.post("/api/curation/transactions")
+def curation_update_transactions(payload: CurationUpdatePayload):
+    csv_path = _resolve_csv_path(payload.file)
+    fieldnames, rows = _read_curation_csv(csv_path)
+
+    changed = 0
+    for update in payload.updates:
+        if update.row_id < 1 or update.row_id > len(rows):
+            raise HTTPException(status_code=400, detail=f"Invalid row_id: {update.row_id}")
+        row = rows[update.row_id - 1]
+
+        if update.keep is not None:
+            row["keep"] = "true" if update.keep else "false"
+            changed += 1
+
+        if update.categoria_orcamento is not None:
+            row["categoria_orcamento"] = update.categoria_orcamento.strip()
+            changed += 1
+
+    _write_curation_csv(csv_path, fieldnames, rows)
+    return {
+        "status": "ok",
+        "changed_fields": changed,
+        "csv_file": str(csv_path.relative_to(ROOT_PATH)),
+    }
+
+
+class CurationImportPayload(BaseModel):
+    file: str | None = None
+    require_category: bool = True
+
+
+@app.post("/api/curation/import-expenses")
+def curation_import_expenses(payload: CurationImportPayload):
+    csv_path = _resolve_csv_path(payload.file)
+    _, rows = _read_curation_csv(csv_path)
+    conn = get_conn()
+
+    imported = 0
+    skipped_not_keep = 0
+    skipped_missing_category = 0
+    skipped_invalid_date = 0
+    skipped_invalid_amount = 0
+    skipped_non_expense_amount = 0
+    skipped_duplicates = 0
+    by_month: dict[str, int] = defaultdict(int)
+
+    for row in rows:
+        if not _normalize_keep(row.get("keep")):
+            skipped_not_keep += 1
+            continue
+
+        category = (row.get("categoria_orcamento") or "").strip()
+        if payload.require_category and not category:
+            skipped_missing_category += 1
+            continue
+        if not category:
+            category = "Sem Categoria"
+
+        raw_date = str(row.get("date", "")).strip()
+        try:
+            tx_date = datetime.strptime(raw_date, "%Y-%m-%d").date().isoformat()
+        except ValueError:
+            skipped_invalid_date += 1
+            continue
+
+        amount = _parse_curation_amount(row.get("amount"))
+        if amount is None:
+            skipped_invalid_amount += 1
+            continue
+        if amount <= 0:
+            skipped_non_expense_amount += 1
+            continue
+
+        description = (
+            str(row.get("title") or "").strip()
+            or str(row.get("description") or "").strip()
+            or "Transação importada de CSV"
+        )
+
+        exists = conn.execute(
+            """
+            SELECT 1 FROM expenses
+            WHERE expense_date = ? AND amount = ? AND description = ? AND category = ? AND kind = 'one_off'
+            """,
+            (tx_date, amount, description, category),
+        ).fetchone()
+        if exists:
+            skipped_duplicates += 1
+            continue
+
+        conn.execute(
+            """
+            INSERT INTO expenses (expense_date, amount, description, category, kind)
+            VALUES (?, ?, ?, ?, 'one_off')
+            """,
+            (tx_date, amount, description, category),
+        )
+        imported += 1
+        by_month[tx_date[:7]] += 1
+
+    conn.commit()
+    conn.close()
+
+    return {
+        "status": "ok",
+        "csv_file": str(csv_path.relative_to(ROOT_PATH)),
+        "imported_expenses": imported,
+        "imported_by_month": dict(sorted(by_month.items())),
+        "skipped": {
+            "not_keep": skipped_not_keep,
+            "missing_category": skipped_missing_category,
+            "invalid_date": skipped_invalid_date,
+            "invalid_amount": skipped_invalid_amount,
+            "non_expense_amount": skipped_non_expense_amount,
+            "duplicates": skipped_duplicates,
+        },
+    }
+
+
+@app.post("/api/curation/export")
+def curation_export_keep_only(file: str | None = Query(default=None)):
+    csv_path = _resolve_csv_path(file)
+    fieldnames, rows = _read_curation_csv(csv_path)
+
+    kept_rows = [row for row in rows if _normalize_keep(row.get("keep"))]
+    out_path = csv_path.with_name(f"{csv_path.stem}_keep_categorized.csv")
+    _write_curation_csv(out_path, fieldnames, kept_rows)
+
+    return {
+        "status": "ok",
+        "input_file": str(csv_path.relative_to(ROOT_PATH)),
+        "output_file": str(out_path.relative_to(ROOT_PATH)),
+        "rows_exported": len(kept_rows),
+    }

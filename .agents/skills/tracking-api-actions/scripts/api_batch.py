@@ -5,17 +5,27 @@ import argparse
 import csv
 import json
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
-ALLOWED_ACTIONS = {"add-expense", "add-income", "add-subscription", "set-budget"}
+ALLOWED_ACTIONS = {
+    "add-expense",
+    "add-income",
+    "add-subscription",
+    "set-budget",
+    "update-expense",
+    "delete-expense",
+    "update-budget",
+    "delete-budget",
+}
 
 
-def post_json(base: str, path: str, body: dict) -> dict:
+def request_json(method: str, base: str, path: str, body: dict | None = None) -> dict:
     req = urllib.request.Request(
         url=f"{base.rstrip('/')}{path}",
-        method="POST",
-        data=json.dumps(body).encode("utf-8"),
+        method=method,
+        data=json.dumps(body).encode("utf-8") if body is not None else None,
         headers={"Content-Type": "application/json"},
     )
     try:
@@ -27,13 +37,13 @@ def post_json(base: str, path: str, body: dict) -> dict:
         raise RuntimeError(f"HTTP {err.code} {err.reason}: {detail}") from err
 
 
-def endpoint_and_body(item: dict) -> tuple[str, dict]:
+def endpoint_and_payload(item: dict) -> tuple[str, str, dict | None]:
     action = item.get("action")
     if action not in ALLOWED_ACTIONS:
         raise ValueError(f"Unsupported action: {action}")
 
     if action == "add-expense":
-        return "/api/expenses", {
+        return "POST", "/api/expenses", {
             "expense_date": item["expense_date"],
             "amount": float(item["amount"]),
             "category": item["category"],
@@ -41,7 +51,7 @@ def endpoint_and_body(item: dict) -> tuple[str, dict]:
         }
 
     if action == "add-income":
-        return "/api/incomes", {
+        return "POST", "/api/incomes", {
             "income_date": item["income_date"],
             "amount": float(item["amount"]),
             "category": item["category"],
@@ -57,13 +67,33 @@ def endpoint_and_body(item: dict) -> tuple[str, dict]:
         }
         if item.get("start_date"):
             body["start_date"] = item["start_date"]
-        return "/api/subscriptions", body
+        return "POST", "/api/subscriptions", body
 
-    return "/api/budgets", {
-        "month": item["month"],
-        "category": item["category"],
-        "amount": float(item["amount"]),
-    }
+    if action == "set-budget":
+        return "POST", "/api/budgets", {
+            "category": item["category"],
+            "amount": float(item["amount"]),
+        }
+
+    if action == "update-expense":
+        return "PUT", f"/api/expenses/{int(item['id'])}", {
+            "expense_date": item["expense_date"],
+            "amount": float(item["amount"]),
+            "category": item["category"],
+            "description": item["description"],
+        }
+
+    if action == "delete-expense":
+        return "DELETE", f"/api/expenses/{int(item['id'])}", None
+
+    if action == "update-budget":
+        return "PUT", "/api/budgets", {
+            "category": item["category"],
+            "amount": float(item["amount"]),
+        }
+
+    query = urllib.parse.urlencode({"category": item["category"]})
+    return "DELETE", f"/api/budgets?{query}", None
 
 
 def load_json(path: Path) -> list[dict]:
@@ -104,12 +134,17 @@ def main() -> int:
     failed = 0
     for idx, op in enumerate(ops, start=1):
         try:
-            path, body = endpoint_and_body(op)
+            method, path, body = endpoint_and_payload(op)
             if args.dry_run:
-                print(json.dumps({"index": idx, "action": op.get("action"), "path": path, "body": body}, ensure_ascii=False))
+                print(
+                    json.dumps(
+                        {"index": idx, "action": op.get("action"), "method": method, "path": path, "body": body},
+                        ensure_ascii=False,
+                    )
+                )
                 ok += 1
                 continue
-            result = post_json(args.base, path, body)
+            result = request_json(method, args.base, path, body)
             print(json.dumps({"index": idx, "action": op.get("action"), "result": result}, ensure_ascii=False))
             ok += 1
         except Exception as err:

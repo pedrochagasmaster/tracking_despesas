@@ -8,6 +8,10 @@ Supported actions:
 - `add-income`
 - `add-subscription`
 - `set-budget`
+- `update-expense`
+- `delete-expense`
+- `update-budget`
+- `delete-budget`
 
 ## JSON format
 
@@ -22,9 +26,20 @@ Supported actions:
   },
   {
     "action": "set-budget",
-    "month": "2026-02",
     "category": "Moradia",
     "amount": 5500
+  },
+  {
+    "action": "update-expense",
+    "id": 12,
+    "expense_date": "2026-02-10",
+    "amount": 99.9,
+    "category": "Alimentação",
+    "description": "Supermercado (ajuste)"
+  },
+  {
+    "action": "delete-budget",
+    "category": "Moradia"
   }
 ]
 ```
@@ -52,7 +67,11 @@ Action-specific columns:
 - `add-expense`: `expense_date,amount,category,description`
 - `add-income`: `income_date,amount,category,description`
 - `add-subscription`: `name,amount,category,frequency,start_date`
-- `set-budget`: `month,category,amount`
+- `set-budget`: `category,amount`
+- `update-expense`: `id,expense_date,amount,category,description`
+- `delete-expense`: `id`
+- `update-budget`: `category,amount`
+- `delete-budget`: `category`
 
 ## Execution
 

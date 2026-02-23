@@ -23,7 +23,7 @@ smoke:
 	$(PYTHON) expense_cli.py --db smoke_test.db add-subscription --name Netflix --amount 45 --category Streaming --frequency monthly --start-date 2026-01-10
 	$(PYTHON) expense_cli.py --db smoke_test.db run-subscriptions --month 2026-02
 	$(PYTHON) expense_cli.py --db smoke_test.db add-installment --description "Notebook" --category Eletronicos --total-amount 2400 --installments 12 --start-date 2026-02-15
-	$(PYTHON) expense_cli.py --db smoke_test.db set-budget --month 2026-02 --category Moradia --amount 1300
+	$(PYTHON) expense_cli.py --db smoke_test.db set-budget --category Moradia --amount 1300
 	$(PYTHON) expense_cli.py --db smoke_test.db report-month --month 2026-02
 	$(PYTHON) expense_cli.py --db smoke_test.db report-trends --months 2
 	$(PYTHON) expense_cli.py --db smoke_test.db report-savings --month 2026-02 --target-rate 20

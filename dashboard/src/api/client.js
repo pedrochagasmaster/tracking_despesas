@@ -7,8 +7,29 @@ async function req(path, opts = {}) {
         ...opts,
     })
     if (!res.ok) {
-        const err = await res.text()
-        throw new Error(err || res.statusText)
+        let message = res.statusText || 'Request failed'
+        const contentType = res.headers.get('content-type') || ''
+        if (contentType.includes('application/json')) {
+            const data = await res.json().catch(() => null)
+            if (typeof data?.detail === 'string') {
+                message = data.detail
+            } else if (Array.isArray(data?.detail)) {
+                const first = data.detail[0]
+                if (first?.msg) {
+                    const loc = Array.isArray(first.loc) ? first.loc.join('.') : ''
+                    message = loc ? `${loc}: ${first.msg}` : first.msg
+                } else {
+                    message = JSON.stringify(data.detail)
+                }
+            } else if (data?.detail != null) {
+                message = JSON.stringify(data.detail)
+            }
+            else if (data?.message) message = data.message
+        } else {
+            const text = await res.text()
+            if (text) message = text
+        }
+        throw new Error(message)
     }
     return res.json()
 }
@@ -24,7 +45,23 @@ export const api = {
     categories: () => req('/api/categories'),
 
     addExpense: (body) => req('/api/expenses', { method: 'POST', body: JSON.stringify(body) }),
+    updateExpense: (id, body) => req(`/api/expenses/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+    deleteExpense: (id) => req(`/api/expenses/${id}`, { method: 'DELETE' }),
     addIncome: (body) => req('/api/incomes', { method: 'POST', body: JSON.stringify(body) }),
     addSubscription: (body) => req('/api/subscriptions', { method: 'POST', body: JSON.stringify(body) }),
     setBudget: (body) => req('/api/budgets', { method: 'POST', body: JSON.stringify(body) }),
+    updateBudget: (body) => req('/api/budgets', { method: 'PUT', body: JSON.stringify(body) }),
+    deleteBudget: (category) => req(`/api/budgets?category=${encodeURIComponent(category)}`, { method: 'DELETE' }),
+
+    curationMeta: (file) => req(`/api/curation/meta${file ? `?file=${encodeURIComponent(file)}` : ''}`),
+    curationTransactions: ({ file, view = 'keep', limit = 250 } = {}) => {
+        const params = new URLSearchParams()
+        if (file) params.set('file', file)
+        params.set('view', view)
+        params.set('limit', String(limit))
+        return req(`/api/curation/transactions?${params.toString()}`)
+    },
+    curationUpdate: (body) => req('/api/curation/transactions', { method: 'POST', body: JSON.stringify(body) }),
+    curationExport: (file) => req(`/api/curation/export${file ? `?file=${encodeURIComponent(file)}` : ''}`, { method: 'POST' }),
+    curationImportExpenses: (body) => req('/api/curation/import-expenses', { method: 'POST', body: JSON.stringify(body) }),
 }
