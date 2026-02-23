@@ -1,0 +1,4 @@
+interface:
+  display_name: "Tracking API Actions"
+  short_description: "Execute all Tracking API operations safely"
+  default_prompt: "Use $tracking-api-actions to list, create, and update financial records via this project API."

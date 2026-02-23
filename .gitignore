@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.venv/
+.pytest_cache/
+.mypy_cache/
+
+# Build/package artifacts
+build/
+dist/
+*.egg-info/
+
+# Local databases and logs
+expenses.db
+smoke_test.db
+*.db-shm
+*.db-wal
+*.log
+
+# Excel temporary lock files
+.~lock*.xlsx#
+
+# Frontend artifacts
+dashboard/node_modules/
+dashboard/dist/
+
+# Environment files
+.env
+.env.*

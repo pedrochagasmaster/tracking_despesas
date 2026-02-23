@@ -1,0 +1,145 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-950 text-slate-100 antialiased;
+    font-family: "Plus Jakarta Sans", sans-serif;
+    overflow-x: hidden;
+  }
+
+  * {
+    @apply border-slate-700;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-slate-800/65 backdrop-blur-sm border border-slate-700/60 rounded-2xl;
+  }
+
+  .kpi-card {
+    @apply glass-card p-5 lg:p-6 flex flex-col gap-2 hover:border-slate-500/80 hover:-translate-y-0.5 transition-all duration-300;
+  }
+
+  .btn-primary {
+    @apply bg-cyan-600 hover:bg-cyan-500 text-white font-semibold px-4 py-2 rounded-xl transition-all duration-200 active:scale-95 text-sm shadow-lg shadow-cyan-900/30;
+  }
+
+  .btn-ghost {
+    @apply text-slate-300 hover:text-white hover:bg-slate-700/50 px-3 py-2 rounded-xl transition-all duration-200 text-sm;
+  }
+
+  .input-field {
+    @apply bg-slate-800 border border-slate-600 text-slate-100 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/60 focus:border-cyan-500 placeholder:text-slate-500 transition-all duration-200 w-full;
+  }
+
+  .label {
+    @apply text-xs font-medium text-slate-300 uppercase tracking-wider;
+    font-family: "IBM Plex Mono", monospace;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium;
+  }
+
+  .badge-green {
+    @apply badge bg-emerald-500/15 text-emerald-400;
+  }
+
+  .badge-red {
+    @apply badge bg-red-500/15 text-red-400;
+  }
+
+  .badge-yellow {
+    @apply badge bg-amber-500/15 text-amber-400;
+  }
+
+  .badge-violet {
+    @apply badge bg-violet-500/15 text-violet-400;
+  }
+
+  .badge-blue {
+    @apply badge bg-blue-500/15 text-blue-400;
+  }
+
+  .nav-item {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer;
+  }
+
+  .nav-item-active {
+    @apply nav-item bg-cyan-600/20 text-cyan-300 border border-cyan-500/30;
+  }
+
+  .nav-item-inactive {
+    @apply nav-item text-slate-400 hover:text-slate-100 hover:bg-slate-800/60;
+  }
+
+  .table-header {
+    @apply text-xs uppercase tracking-wider text-slate-400 font-semibold py-3 px-4;
+    font-family: "IBM Plex Mono", monospace;
+  }
+
+  .table-cell {
+    @apply py-3.5 px-4 text-sm;
+  }
+
+  .section-shell {
+    @apply glass-card p-4 sm:p-6;
+  }
+
+  .section-title {
+    @apply text-base sm:text-lg font-semibold text-slate-100;
+  }
+
+  .section-subtitle {
+    @apply text-xs sm:text-sm text-slate-400 mt-0.5;
+  }
+
+  .stat-chip {
+    @apply inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-600/70 bg-slate-800/70 text-xs font-medium text-slate-300;
+    font-family: "IBM Plex Mono", monospace;
+  }
+}
+
+@layer utilities {
+  .text-gradient-violet {
+    @apply bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-emerald {
+    @apply bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent;
+  }
+
+  .glow-violet {
+    box-shadow: 0 0 30px -5px rgba(34, 211, 238, 0.32);
+  }
+
+  .glow-cyan {
+    box-shadow: 0 0 36px -8px rgba(8, 145, 178, 0.6);
+  }
+
+  .glow-emerald {
+    box-shadow: 0 0 30px -5px rgba(52, 211, 153, 0.3);
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #334155 transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: #334155;
+    border-radius: 3px;
+  }
+}
