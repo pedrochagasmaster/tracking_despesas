@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { api } from '../api/client'
 import { Check, CircleSlash2, Download, RefreshCw, Tags } from 'lucide-react'
 
@@ -48,17 +48,27 @@ function normalizeLoadError(err) {
   return text || 'Falha ao carregar curadoria.'
 }
 
+function isNotFoundError(err) {
+  const text = String(err?.message || '').toLowerCase()
+  return text.includes('404') || text.includes('not found')
+}
+
 export default function Curation() {
   const [meta, setMeta] = useState({ csv_file: '', available_csv_files: [], categories: [] })
   const [selectedFile, setSelectedFile] = useState('')
   const [rows, setRows] = useState([])
   const [view, setView] = useState('uncategorized')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [savingRow, setSavingRow] = useState(null)
   const [exportStatus, setExportStatus] = useState('')
   const [importStatus, setImportStatus] = useState('')
   const [importing, setImporting] = useState(false)
+  const [rangeStatus, setRangeStatus] = useState('')
+  const [applyingRange, setApplyingRange] = useState(false)
+  const lastAutoRangeKey = useRef('')
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -66,7 +76,13 @@ export default function Curation() {
     try {
       const [metaRes, rowsRes] = await Promise.all([
         api.curationMeta(selectedFile || undefined),
-        api.curationTransactions({ file: selectedFile || undefined, view, limit: 1200 }),
+        api.curationTransactions({
+          file: selectedFile || undefined,
+          view,
+          limit: 1200,
+          dateFrom: dateFrom || undefined,
+          dateTo: dateTo || undefined,
+        }),
       ])
       setMeta(metaRes)
       if (!selectedFile && metaRes.csv_file) {
@@ -78,7 +94,7 @@ export default function Curation() {
     } finally {
       setLoading(false)
     }
-  }, [view, selectedFile])
+  }, [view, selectedFile, dateFrom, dateTo])
 
   useEffect(() => {
     load()
@@ -156,6 +172,85 @@ export default function Curation() {
     }
   }
 
+  async function applyDateRangeDrop({ automatic = false } = {}) {
+    if (!dateFrom || !dateTo) {
+      if (automatic) return
+      setError('Selecione De e Até para aplicar o descarte fora da faixa.')
+      return
+    }
+    setApplyingRange(true)
+    setRangeStatus(automatic ? 'Aplicando faixa de datas automaticamente...' : 'Aplicando faixa de datas...')
+    setError('')
+    try {
+      let res
+      try {
+        res = await api.curationApplyDateRange({
+          file: selectedFile || undefined,
+          date_from: dateFrom,
+          date_to: dateTo,
+        })
+      } catch (err) {
+        if (!isNotFoundError(err)) throw err
+        const allRowsRes = await api.curationTransactions({
+          file: selectedFile || undefined,
+          view: 'all',
+          limit: 2000,
+        })
+        const allRows = allRowsRes.items || []
+        let droppedOutsideRange = 0
+        let invalidDateRows = 0
+        const updates = []
+
+        for (const row of allRows) {
+          const rowDate = String(row.date || '').trim()
+          const validDate = /^\d{4}-\d{2}-\d{2}$/.test(rowDate)
+          if (!validDate) invalidDateRows += 1
+          const inRange = validDate && rowDate >= dateFrom && rowDate <= dateTo
+          if (!inRange) {
+            droppedOutsideRange += 1
+            if (row.keep) updates.push({ row_id: row.row_id, keep: false })
+          }
+        }
+
+        for (let i = 0; i < updates.length; i += 400) {
+          await api.curationUpdate({
+            file: selectedFile || undefined,
+            updates: updates.slice(i, i + 400),
+          })
+        }
+        res = {
+          dropped_outside_range: droppedOutsideRange,
+          invalid_date_rows: invalidDateRows,
+          changed_rows: updates.length,
+        }
+      }
+      lastAutoRangeKey.current = `${selectedFile || meta.csv_file}|${dateFrom}|${dateTo}`
+      setRangeStatus(
+        `Fora da faixa marcadas para descarte: ${res.dropped_outside_range}. ` +
+        `Alteradas: ${res.changed_rows}.`
+      )
+      await load()
+    } catch (err) {
+      setRangeStatus('')
+      setError(err.message || 'Falha ao aplicar faixa de datas.')
+    } finally {
+      setApplyingRange(false)
+    }
+  }
+
+  useEffect(() => {
+    if (!dateFrom || !dateTo) return
+    const fileKey = selectedFile || meta.csv_file
+    if (!fileKey) return
+    const key = `${fileKey}|${dateFrom}|${dateTo}`
+    if (lastAutoRangeKey.current === key) return
+
+    const timer = window.setTimeout(() => {
+      applyDateRangeDrop({ automatic: true })
+    }, 250)
+    return () => window.clearTimeout(timer)
+  }, [dateFrom, dateTo, selectedFile, meta.csv_file])
+
   return (
     <div className="space-y-5 animate-fade-in">
       <div className="flex flex-col gap-3">
@@ -184,6 +279,34 @@ export default function Curation() {
           </select>
           <div className="mt-1 text-[11px] text-slate-400 break-all">{selectedFile || '—'}</div>
         </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div>
+            <label className="label block mb-1.5">De</label>
+            <input
+              type="date"
+              className="input-field"
+              value={dateFrom}
+              onChange={(event) => setDateFrom(event.target.value)}
+            />
+          </div>
+          <div>
+            <label className="label block mb-1.5">Até</label>
+            <input
+              type="date"
+              className="input-field"
+              value={dateTo}
+              onChange={(event) => setDateTo(event.target.value)}
+            />
+          </div>
+        </div>
+        <button
+          type="button"
+          className="btn-ghost w-full sm:w-auto"
+          onClick={() => applyDateRangeDrop()}
+          disabled={applyingRange}
+        >
+          {applyingRange ? 'Aplicando...' : 'Descartar fora da faixa'}
+        </button>
       </div>
 
       {error && (
@@ -255,6 +378,11 @@ export default function Curation() {
       {importStatus && (
         <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-xs text-emerald-200">
           {importStatus}
+        </div>
+      )}
+      {rangeStatus && (
+        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-xs text-emerald-200">
+          {rangeStatus}
         </div>
       )}
 

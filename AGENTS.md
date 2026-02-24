@@ -17,6 +17,23 @@ Repository guidance for coding agents and contributors.
 - Prefer standard library unless a package is necessary.
 - Preserve Portuguese business terms used by the user domain (`Assinaturas`, `Parcelados`, `Orçamento`, `Transações`).
 
+## Operational guardrails
+
+- API server lifecycle:
+  - The API is typically started without `--reload` (`scripts/app_endpoint.py` / `tracking_despesas_server.py`).
+  - After backend changes in `api.py`, restart API and verify live schema via `/openapi.json` before concluding.
+- Frontend syntax checks:
+  - Do not run `py_compile` against `.jsx` files; validate frontend with `npm --prefix dashboard run build`.
+- Mobile screenshots:
+  - Prefer Playwright viewport captures (`--viewport-size`) over device emulation.
+  - Device emulation may fail on hosts missing Playwright system dependencies.
+- Desktop screenshot validation:
+  - Capture at least one desktop viewport screenshot (for example `1440x900`) for UI changes.
+  - Validate action-bar alignment, overflow/clipping, and card/grid spacing before concluding.
+- Dirty worktree discipline:
+  - Stage and commit only files related to the requested scope.
+  - Never include unrelated local changes in the same commit.
+
 ## CLI changes
 
 - Any new feature in `expense_cli.py` must include:
@@ -24,6 +41,19 @@ Repository guidance for coding agents and contributors.
   - persistent storage updates (SQLite schema/migrations-safe behavior)
   - at least one report/list path to validate outcomes
 - Keep commands idempotent where possible (example: monthly subscription materialization).
+- Budget model is account-wide (not month-specific):
+  - Do not reintroduce `budget_month` in API/CLI payloads or SQL.
+  - Keep migration-safe behavior for legacy DBs that still have `budget_month`.
+
+## API/UI alignment rules
+
+- Keep API helpers and automation scripts aligned with backend contracts:
+  - When `/api` payloads change, update `.agents/skills/tracking-api-actions/` scripts and references in the same change.
+- Curation flows:
+  - Always propagate selected `file` through all curation API calls (`meta`, `transactions`, `update`, `export`, `import-expenses`).
+  - Keep curation updates persistence semantics: edit writes back to CSV immediately (temp file + replace).
+- Subscription materialization:
+  - Materialization is explicit and idempotent per month (CLI `run-subscriptions` and API/UI run action should match this behavior).
 
 ## Excel/workbook changes
 

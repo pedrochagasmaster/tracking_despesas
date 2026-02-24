@@ -62,10 +62,15 @@ def pid_for_port(port: int) -> int | None:
 
 def start_nohup(command: str, log_path: Path) -> int:
     log_path.parent.mkdir(parents=True, exist_ok=True)
-    quoted_log = shlex.quote(str(log_path))
-    cmd = f"cd {shlex.quote(str(ROOT))} && nohup {command} > {quoted_log} 2>&1 & echo $!"
-    out = subprocess.check_output(["bash", "-lc", cmd], text=True).strip()
-    return int(out)
+    with log_path.open("ab") as logf, open(os.devnull, "rb") as devnull:
+        proc = subprocess.Popen(
+            ["bash", "-lc", f"cd {shlex.quote(str(ROOT))} && exec nohup {command}"],
+            stdin=devnull,
+            stdout=logf,
+            stderr=subprocess.STDOUT,
+            start_new_session=True,
+        )
+    return proc.pid
 
 
 def wait_for_port(port: int, timeout_s: int = 25) -> bool:

@@ -5,6 +5,7 @@ import MonthPicker from '../components/MonthPicker'
 import SpendingDonut from '../components/SpendingDonut'
 import TrendChart from '../components/TrendChart'
 import { DollarSign, TrendingDown, Banknote, Percent, Plus, X, RefreshCw } from 'lucide-react'
+import { currentMonthKey } from '../utils/date'
 
 const fmt = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v)
 
@@ -82,16 +83,12 @@ function AddModal({ onClose, onSave }) {
 }
 
 export default function Overview() {
-    const [month, setMonth] = useState('')
+    const [month, setMonth] = useState(currentMonthKey)
     const [summary, setSummary] = useState(null)
     const [trends, setTrends] = useState([])
     const [expenses, setExpenses] = useState([])
     const [loading, setLoading] = useState(true)
     const [showModal, setShowModal] = useState(false)
-
-    useEffect(() => {
-        api.defaultMonth().then(({ month }) => setMonth(month)).catch(console.error)
-    }, [])
 
     const load = useCallback(async () => {
         if (!month) return

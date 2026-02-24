@@ -49,19 +49,25 @@ export const api = {
     deleteExpense: (id) => req(`/api/expenses/${id}`, { method: 'DELETE' }),
     addIncome: (body) => req('/api/incomes', { method: 'POST', body: JSON.stringify(body) }),
     addSubscription: (body) => req('/api/subscriptions', { method: 'POST', body: JSON.stringify(body) }),
+    updateSubscription: (id, body) => req(`/api/subscriptions/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+    deleteSubscription: (id) => req(`/api/subscriptions/${id}`, { method: 'DELETE' }),
+    runSubscriptions: (body) => req('/api/subscriptions/run', { method: 'POST', body: JSON.stringify(body) }),
     setBudget: (body) => req('/api/budgets', { method: 'POST', body: JSON.stringify(body) }),
     updateBudget: (body) => req('/api/budgets', { method: 'PUT', body: JSON.stringify(body) }),
     deleteBudget: (category) => req(`/api/budgets?category=${encodeURIComponent(category)}`, { method: 'DELETE' }),
 
     curationMeta: (file) => req(`/api/curation/meta${file ? `?file=${encodeURIComponent(file)}` : ''}`),
-    curationTransactions: ({ file, view = 'keep', limit = 250 } = {}) => {
+    curationTransactions: ({ file, view = 'keep', limit = 250, dateFrom, dateTo } = {}) => {
         const params = new URLSearchParams()
         if (file) params.set('file', file)
         params.set('view', view)
         params.set('limit', String(limit))
+        if (dateFrom) params.set('date_from', dateFrom)
+        if (dateTo) params.set('date_to', dateTo)
         return req(`/api/curation/transactions?${params.toString()}`)
     },
     curationUpdate: (body) => req('/api/curation/transactions', { method: 'POST', body: JSON.stringify(body) }),
+    curationApplyDateRange: (body) => req('/api/curation/date-range', { method: 'POST', body: JSON.stringify(body) }),
     curationExport: (file) => req(`/api/curation/export${file ? `?file=${encodeURIComponent(file)}` : ''}`, { method: 'POST' }),
     curationImportExpenses: (body) => req('/api/curation/import-expenses', { method: 'POST', body: JSON.stringify(body) }),
 }

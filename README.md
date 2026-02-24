@@ -110,6 +110,10 @@ This page:
 - Exports a final filtered file via the API:
   - `nubank_csv_attachments_last24h/combined_transactions_deduped_keep_categorized.csv`
 
+### Run subscriptions from UI
+
+In `Assinaturas`, use the month picker + `Lançar mês` button to materialize recurring charges into monthly expenses (idempotent per month).
+
 ## Agent endpoint launcher/status
 
 Use one script to either start missing services with `nohup` or just inspect running endpoints:

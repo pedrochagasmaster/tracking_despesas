@@ -6,7 +6,7 @@ import {
     PieChart,
     TrendingUp,
     Wallet,
-    Settings,
+    Tags,
     Zap,
     X,
 } from 'lucide-react'
@@ -17,6 +17,7 @@ const links = [
     { to: '/subscriptions', icon: RefreshCw, label: 'Assinaturas' },
     { to: '/budgets', icon: PieChart, label: 'Orçamentos' },
     { to: '/analytics', icon: TrendingUp, label: 'Análise' },
+    { to: '/curation', icon: Tags, label: 'Curadoria CSV' },
 ]
 
 export default function Sidebar({ isOpen = false, onClose = null }) {

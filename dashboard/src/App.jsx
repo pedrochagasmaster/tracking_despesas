@@ -6,6 +6,7 @@ import Transactions from './pages/Transactions'
 import Subscriptions from './pages/Subscriptions'
 import Budgets from './pages/Budgets'
 import Analytics from './pages/Analytics'
+import Curation from './pages/Curation'
 import { Menu } from 'lucide-react'
 
 export default function App() {
@@ -44,6 +45,7 @@ export default function App() {
               <Route path="/subscriptions" element={<Subscriptions />} />
               <Route path="/budgets" element={<Budgets />} />
               <Route path="/analytics" element={<Analytics />} />
+              <Route path="/curation" element={<Curation />} />
             </Routes>
           </div>
         </main>

@@ -59,6 +59,31 @@ def shift_month(base: date, offset: int) -> date:
     return date(year, month, day)
 
 
+def _subscription_due_on_month(sub: sqlite3.Row, start: date, end: date) -> bool:
+    start_date = datetime.strptime(str(sub["start_date"]), "%Y-%m-%d").date()
+    if start_date > end:
+        return False
+
+    end_date_raw = sub["end_date"] if "end_date" in sub.keys() else None
+    if end_date_raw:
+        end_date = datetime.strptime(str(end_date_raw), "%Y-%m-%d").date()
+        if end_date < start:
+            return False
+
+    frequency = str(sub["frequency"])
+    if frequency == "monthly":
+        return True
+
+    if frequency == "yearly":
+        import calendar
+
+        due_day = min(start_date.day, calendar.monthrange(start.year, start_date.month)[1])
+        due_date = date(start.year, start_date.month, due_day)
+        return start <= due_date <= end
+
+    return False
+
+
 def current_month() -> str:
     today = date.today()
     return f"{today.year:04d}-{today.month:02d}"
@@ -514,6 +539,134 @@ def add_subscription(body: SubscriptionIn):
     return {"status": "ok"}
 
 
+class SubscriptionUpdateIn(BaseModel):
+    name: str
+    amount: float
+    category: str
+    frequency: str
+    start_date: str
+    end_date: str | None = None
+    active: bool = True
+
+
+def _subscription_or_404(conn: sqlite3.Connection, subscription_id: int) -> sqlite3.Row:
+    row = conn.execute("SELECT id FROM subscriptions WHERE id = ?", (subscription_id,)).fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="Subscription not found")
+    return row
+
+
+@app.put("/api/subscriptions/{subscription_id}")
+def update_subscription(subscription_id: int, body: SubscriptionUpdateIn):
+    conn = get_conn()
+    _subscription_or_404(conn, subscription_id)
+    conn.execute(
+        """
+        UPDATE subscriptions
+        SET name = ?, amount = ?, category = ?, frequency = ?, start_date = ?, end_date = ?, active = ?
+        WHERE id = ?
+        """,
+        (
+            body.name.strip(),
+            body.amount,
+            body.category.strip(),
+            body.frequency,
+            body.start_date,
+            body.end_date,
+            1 if body.active else 0,
+            subscription_id,
+        ),
+    )
+    conn.commit()
+    conn.close()
+    return {"status": "ok"}
+
+
+@app.delete("/api/subscriptions/{subscription_id}")
+def delete_subscription(subscription_id: int):
+    conn = get_conn()
+    _subscription_or_404(conn, subscription_id)
+    try:
+        cur = conn.execute("DELETE FROM subscriptions WHERE id = ?", (subscription_id,))
+    except sqlite3.IntegrityError:
+        conn.close()
+        raise HTTPException(
+            status_code=400,
+            detail="Subscription has linked charges. Set it inactive instead of deleting.",
+        )
+    if cur.rowcount == 0:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Subscription not found")
+    conn.commit()
+    conn.close()
+    return {"status": "ok"}
+
+
+class RunSubscriptionsIn(BaseModel):
+    month: str
+    dry_run: bool = False
+
+
+@app.post("/api/subscriptions/run")
+def run_subscriptions(body: RunSubscriptionsIn):
+    start, end = parse_month(body.month)
+    month_id = start.strftime("%Y-%m")
+    charge_date = date(start.year, start.month, 1).isoformat()
+
+    conn = get_conn()
+    subs = conn.execute("SELECT * FROM subscriptions WHERE active = 1").fetchall()
+
+    eligible = 0
+    skipped_already_charged = 0
+    materialized = 0
+
+    for sub in subs:
+        if not _subscription_due_on_month(sub, start, end):
+            continue
+        eligible += 1
+
+        exists = conn.execute(
+            "SELECT 1 FROM subscription_charges WHERE subscription_id = ? AND charge_month = ?",
+            (sub["id"], month_id),
+        ).fetchone()
+        if exists:
+            skipped_already_charged += 1
+            continue
+
+        if body.dry_run:
+            materialized += 1
+            continue
+
+        exp = conn.execute(
+            """
+            INSERT INTO expenses (expense_date, amount, description, category, kind, subscription_id)
+            VALUES (?, ?, ?, ?, 'subscription', ?)
+            """,
+            (charge_date, sub["amount"], f"Subscription: {sub['name']}", sub["category"], sub["id"]),
+        )
+        conn.execute(
+            """
+            INSERT INTO subscription_charges (subscription_id, charge_month, expense_id)
+            VALUES (?, ?, ?)
+            """,
+            (sub["id"], month_id, exp.lastrowid),
+        )
+        materialized += 1
+
+    if not body.dry_run:
+        conn.commit()
+    conn.close()
+
+    return {
+        "status": "ok",
+        "month": month_id,
+        "dry_run": body.dry_run,
+        "eligible_subscriptions": eligible,
+        "materialized": materialized,
+        "already_charged": skipped_already_charged,
+    }
+
+
 # ── POST: Set budget ──────────────────────────────────────────────────────────────
 class BudgetIn(BaseModel):
     category: str
@@ -584,21 +737,49 @@ def curation_transactions(
     file: str | None = Query(default=None),
     view: str = Query(default="keep"),
     limit: int = Query(default=250, ge=1, le=2000),
+    date_from: str | None = Query(default=None),
+    date_to: str | None = Query(default=None),
 ):
     csv_path = _resolve_csv_path(file)
     _, rows = _read_curation_csv(csv_path)
+    parsed_from: date | None = None
+    parsed_to: date | None = None
+    if date_from:
+        try:
+            parsed_from = datetime.strptime(date_from, "%Y-%m-%d").date()
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail="date_from must be YYYY-MM-DD") from exc
+    if date_to:
+        try:
+            parsed_to = datetime.strptime(date_to, "%Y-%m-%d").date()
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail="date_to must be YYYY-MM-DD") from exc
+    if parsed_from and parsed_to and parsed_from > parsed_to:
+        raise HTTPException(status_code=400, detail="date_from must be <= date_to")
 
     items: list[dict[str, Any]] = []
     for row_id, row in enumerate(rows, start=1):
         keep = _normalize_keep(row.get("keep"))
         category = (row.get("categoria_orcamento") or "").strip()
         text = (row.get("title") or row.get("description") or "").strip()
+        raw_date = str(row.get("date", "")).strip()
+        parsed_row_date: date | None = None
+        if raw_date:
+            try:
+                parsed_row_date = datetime.strptime(raw_date, "%Y-%m-%d").date()
+            except ValueError:
+                parsed_row_date = None
+
+        if parsed_from and (not parsed_row_date or parsed_row_date < parsed_from):
+            continue
+        if parsed_to and (not parsed_row_date or parsed_row_date > parsed_to):
+            continue
 
         item = {
             "row_id": row_id,
             "keep": keep,
             "categoria_orcamento": category,
-            "date": row.get("date", ""),
+            "date": raw_date,
             "amount": row.get("amount", ""),
             "schema_type": row.get("schema_type", ""),
             "title": row.get("title", ""),
@@ -617,6 +798,8 @@ def curation_transactions(
 
     return {
         "view": view,
+        "date_from": date_from,
+        "date_to": date_to,
         "total": len(items),
         "items": items[:limit],
     }
@@ -657,6 +840,58 @@ def curation_update_transactions(payload: CurationUpdatePayload):
         "status": "ok",
         "changed_fields": changed,
         "csv_file": str(csv_path.relative_to(ROOT_PATH)),
+    }
+
+
+class CurationDateRangePayload(BaseModel):
+    file: str | None = None
+    date_from: str
+    date_to: str
+
+
+@app.post("/api/curation/date-range")
+def curation_apply_date_range(payload: CurationDateRangePayload):
+    csv_path = _resolve_csv_path(payload.file)
+    fieldnames, rows = _read_curation_csv(csv_path)
+    try:
+        parsed_from = datetime.strptime(payload.date_from, "%Y-%m-%d").date()
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="date_from must be YYYY-MM-DD") from exc
+    try:
+        parsed_to = datetime.strptime(payload.date_to, "%Y-%m-%d").date()
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="date_to must be YYYY-MM-DD") from exc
+    if parsed_from > parsed_to:
+        raise HTTPException(status_code=400, detail="date_from must be <= date_to")
+
+    dropped_outside = 0
+    invalid_date = 0
+    changed_rows = 0
+    for row in rows:
+        raw_date = str(row.get("date", "")).strip()
+        try:
+            row_date = datetime.strptime(raw_date, "%Y-%m-%d").date()
+        except ValueError:
+            row_date = None
+            invalid_date += 1
+
+        in_range = bool(row_date and parsed_from <= row_date <= parsed_to)
+        if not in_range:
+            dropped_outside += 1
+            if _normalize_keep(row.get("keep")):
+                row["keep"] = "false"
+                changed_rows += 1
+
+    if changed_rows:
+        _write_curation_csv(csv_path, fieldnames, rows)
+    return {
+        "status": "ok",
+        "csv_file": str(csv_path.relative_to(ROOT_PATH)),
+        "date_from": payload.date_from,
+        "date_to": payload.date_to,
+        "dropped_outside_range": dropped_outside,
+        "invalid_date_rows": invalid_date,
+        "changed_rows": changed_rows,
     }
 
 

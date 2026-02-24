@@ -4,6 +4,7 @@ import TrendChart from '../components/TrendChart'
 import SpendingDonut from '../components/SpendingDonut'
 import MonthPicker from '../components/MonthPicker'
 import { RefreshCw, TrendingUp, AlertCircle, Zap, PiggyBank } from 'lucide-react'
+import { currentMonthKey } from '../utils/date'
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts'
@@ -22,14 +23,10 @@ function NetBarTooltip({ active, payload, label }) {
 }
 
 export default function Analytics() {
-    const [month, setMonth] = useState('')
+    const [month, setMonth] = useState(currentMonthKey)
     const [trends, setTrends] = useState([])
     const [summary, setSummary] = useState(null)
     const [loading, setLoading] = useState(true)
-
-    useEffect(() => {
-        api.defaultMonth().then(({ month }) => setMonth(month)).catch(console.error)
-    }, [])
 
     useEffect(() => {
         if (!month) return
