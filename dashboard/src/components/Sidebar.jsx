@@ -1,23 +1,13 @@
 import { NavLink } from 'react-router-dom'
-import {
-    LayoutDashboard,
-    ArrowUpDown,
-    RefreshCw,
-    PieChart,
-    TrendingUp,
-    Wallet,
-    Tags,
-    Zap,
-    X,
-} from 'lucide-react'
+import { X } from 'lucide-react'
 
 const links = [
-    { to: '/', icon: LayoutDashboard, label: 'Visão Geral' },
-    { to: '/transactions', icon: ArrowUpDown, label: 'Transações' },
-    { to: '/subscriptions', icon: RefreshCw, label: 'Assinaturas' },
-    { to: '/budgets', icon: PieChart, label: 'Orçamentos' },
-    { to: '/analytics', icon: TrendingUp, label: 'Análise' },
-    { to: '/curation', icon: Tags, label: 'Curadoria CSV' },
+    { to: '/', label: 'Visão Geral' },
+    { to: '/transactions', label: 'Transações' },
+    { to: '/subscriptions', label: 'Assinaturas' },
+    { to: '/budgets', label: 'Orçamentos' },
+    { to: '/analytics', label: 'Análise' },
+    { to: '/curation', label: 'Curadoria CSV' },
 ]
 
 export default function Sidebar({ isOpen = false, onClose = null }) {
@@ -26,17 +16,12 @@ export default function Sidebar({ isOpen = false, onClose = null }) {
         : '-translate-x-full lg:translate-x-0'
 
     return (
-        <aside className={`fixed inset-y-0 left-0 w-64 bg-slate-900/90 backdrop-blur-xl border-r border-slate-800/60 flex flex-col z-40 transition-transform duration-300 ${shellClass}`}>
+        <aside className={`fixed inset-y-0 left-0 w-64 panel border-y-0 border-l-0 border-r flex flex-col z-40 transition-transform duration-300 ${shellClass}`}>
             {/* Logo */}
-            <div className="flex items-center justify-between gap-3 px-6 py-6 border-b border-slate-800/60">
-                <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg glow-cyan">
-                        <Wallet size={18} className="text-white" />
-                    </div>
-                    <div>
-                        <div className="font-bold text-sm text-white leading-none">Tracking</div>
-                        <div className="text-xs text-slate-400 mt-0.5">Despesas</div>
-                    </div>
+            <div className="flex items-center justify-between px-6 py-8 border-b border-[#1a1a1a]">
+                <div>
+                    <div className="text-xl text-white leading-none tracking-tight" style={{ fontFamily: '"DM Serif Text", serif' }}>TRACKING</div>
+                    <div className="text-[10px] text-[#888] mt-1.5 font-mono uppercase tracking-widest" style={{ fontFamily: '"Space Mono", monospace' }}>Despesas Terminal</div>
                 </div>
                 <button
                     type="button"
@@ -49,29 +34,27 @@ export default function Sidebar({ isOpen = false, onClose = null }) {
             </div>
 
             {/* Nav */}
-            <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto scrollbar-thin">
-                {links.map(({ to, icon: Icon, label }) => (
+            <nav className="flex-1 py-6 space-y-0 overflow-y-auto scrollbar-thin">
+                {links.map(({ to, label }) => (
                     <NavLink
                         key={to}
                         to={to}
                         end={to === '/'}
-                        className={({ isActive }) => isActive ? 'nav-item-active' : 'nav-item-inactive'}
+                        onClick={() => onClose?.()}
+                        className={({ isActive }) => `nav-item ${isActive ? 'nav-item-active' : 'nav-item-inactive'}`}
                     >
-                        <Icon size={18} />
                         <span>{label}</span>
                     </NavLink>
                 ))}
             </nav>
 
             {/* Footer */}
-            <div className="px-3 py-4 border-t border-slate-800/60">
-                <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-gradient-to-r from-cyan-600/10 to-blue-600/10 border border-cyan-500/20">
-                    <div className="w-7 h-7 rounded-lg bg-cyan-500/20 flex items-center justify-center">
-                        <Zap size={14} className="text-cyan-400" />
-                    </div>
+            <div className="p-6 border-t border-[#1a1a1a]">
+                <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full bg-[#555] animate-pulse"></div>
                     <div>
-                        <div className="text-xs font-medium text-slate-300">SQLite connected</div>
-                        <div className="text-xs text-slate-500">expenses.db</div>
+                        <div className="text-[10px] text-[#888] uppercase tracking-wider" style={{ fontFamily: '"Space Mono", monospace' }}>System Active</div>
+                        <div className="text-[10px] text-[#444] mt-0.5" style={{ fontFamily: '"Space Mono", monospace' }}>SQLite DB</div>
                     </div>
                 </div>
             </div>
