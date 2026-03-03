@@ -14,19 +14,19 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <div className="min-h-screen overflow-x-hidden bg-slate-950 bg-gradient-to-b from-slate-950 via-slate-950 to-blue-950/40">
+      <div className="min-h-screen overflow-x-hidden bg-[#050505]">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         {sidebarOpen && (
           <button
             type="button"
-            className="fixed inset-0 z-30 bg-slate-950/65 backdrop-blur-[1px] lg:hidden"
+            className="fixed inset-0 z-30 bg-[#000]/80 lg:hidden"
             onClick={() => setSidebarOpen(false)}
             aria-label="Fechar menu lateral"
           />
         )}
 
         <main className="min-h-screen lg:ml-64 overflow-y-auto scrollbar-thin">
-          <div className="sticky top-0 z-20 border-b border-slate-800/60 bg-slate-950/85 backdrop-blur-xl px-4 py-3 lg:hidden">
+          <div className="sticky top-0 z-20 border-b border-[var(--border-color)] panel px-4 py-3 lg:hidden backdrop-blur">
             <button
               type="button"
               onClick={() => setSidebarOpen(true)}
@@ -34,7 +34,7 @@ export default function App() {
               aria-label="Abrir menu lateral"
             >
               <Menu size={16} />
-              <span>Menu</span>
+              <span className="font-mono text-xs uppercase tracking-wider">Menu</span>
             </button>
           </div>
 
@@ -45,6 +45,7 @@ export default function App() {
               <Route path="/subscriptions" element={<Subscriptions />} />
               <Route path="/budgets" element={<Budgets />} />
               <Route path="/analytics" element={<Analytics />} />
+              <Route path="/inbox" element={<Curation />} />
               <Route path="/curation" element={<Curation />} />
             </Routes>
           </div>

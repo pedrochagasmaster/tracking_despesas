@@ -7,7 +7,7 @@ const links = [
     { to: '/subscriptions', label: 'Assinaturas' },
     { to: '/budgets', label: 'Orçamentos' },
     { to: '/analytics', label: 'Análise' },
-    { to: '/curation', label: 'Curadoria CSV' },
+    { to: '/inbox', label: 'Inbox' },
 ]
 
 export default function Sidebar({ isOpen = false, onClose = null }) {
@@ -18,10 +18,10 @@ export default function Sidebar({ isOpen = false, onClose = null }) {
     return (
         <aside className={`fixed inset-y-0 left-0 w-64 panel border-y-0 border-l-0 border-r flex flex-col z-40 transition-transform duration-300 ${shellClass}`}>
             {/* Logo */}
-            <div className="flex items-center justify-between px-6 py-8 border-b border-[#1a1a1a]">
+            <div className="flex items-center justify-between px-6 py-8 border-b border-[var(--border-color)]">
                 <div>
                     <div className="text-xl text-white leading-none tracking-tight" style={{ fontFamily: '"DM Serif Text", serif' }}>TRACKING</div>
-                    <div className="text-[10px] text-[#888] mt-1.5 font-mono uppercase tracking-widest" style={{ fontFamily: '"Space Mono", monospace' }}>Despesas Terminal</div>
+                    <div className="text-[10px] text-[var(--text-secondary)] mt-1.5 font-mono uppercase tracking-widest" style={{ fontFamily: '"Space Mono", monospace' }}>Despesas Terminal</div>
                 </div>
                 <button
                     type="button"
@@ -49,11 +49,11 @@ export default function Sidebar({ isOpen = false, onClose = null }) {
             </nav>
 
             {/* Footer */}
-            <div className="p-6 border-t border-[#1a1a1a]">
+            <div className="p-6 border-t border-[var(--border-color)]">
                 <div className="flex items-center gap-3">
                     <div className="w-2 h-2 rounded-full bg-[#555] animate-pulse"></div>
                     <div>
-                        <div className="text-[10px] text-[#888] uppercase tracking-wider" style={{ fontFamily: '"Space Mono", monospace' }}>System Active</div>
+                        <div className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider" style={{ fontFamily: '"Space Mono", monospace' }}>System Active</div>
                         <div className="text-[10px] text-[#444] mt-0.5" style={{ fontFamily: '"Space Mono", monospace' }}>SQLite DB</div>
                     </div>
                 </div>

@@ -45,6 +45,8 @@ export const api = {
     categories: () => req('/api/categories'),
 
     addExpense: (body) => req('/api/expenses', { method: 'POST', body: JSON.stringify(body) }),
+    addInstallment: (body) => req('/api/installments', { method: 'POST', body: JSON.stringify(body) }),
+    deleteInstallment: (id) => req(`/api/installments/${id}`, { method: 'DELETE' }),
     updateExpense: (id, body) => req(`/api/expenses/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
     deleteExpense: (id) => req(`/api/expenses/${id}`, { method: 'DELETE' }),
     addIncome: (body) => req('/api/incomes', { method: 'POST', body: JSON.stringify(body) }),
@@ -55,6 +57,20 @@ export const api = {
     setBudget: (body) => req('/api/budgets', { method: 'POST', body: JSON.stringify(body) }),
     updateBudget: (body) => req('/api/budgets', { method: 'PUT', body: JSON.stringify(body) }),
     deleteBudget: (category) => req(`/api/budgets?category=${encodeURIComponent(category)}`, { method: 'DELETE' }),
+
+    inboxMeta: () => req('/api/inbox/meta'),
+    inboxTransactions: ({ view = 'pending', limit = 500, dateFrom, dateTo, sortBy = 'tx_date', sortDir = 'desc' } = {}) => {
+        const params = new URLSearchParams()
+        params.set('view', view)
+        params.set('limit', String(limit))
+        if (dateFrom) params.set('date_from', dateFrom)
+        if (dateTo) params.set('date_to', dateTo)
+        if (sortBy) params.set('sort_by', sortBy)
+        if (sortDir) params.set('sort_dir', sortDir)
+        return req(`/api/inbox/transactions?${params.toString()}`)
+    },
+    inboxUpdate: (body) => req('/api/inbox/transactions', { method: 'POST', body: JSON.stringify(body) }),
+    inboxImportExpenses: (body = {}) => req('/api/inbox/import-expenses', { method: 'POST', body: JSON.stringify(body) }),
 
     curationMeta: (file) => req(`/api/curation/meta${file ? `?file=${encodeURIComponent(file)}` : ''}`),
     curationTransactions: ({ file, view = 'keep', limit = 250, dateFrom, dateTo } = {}) => {

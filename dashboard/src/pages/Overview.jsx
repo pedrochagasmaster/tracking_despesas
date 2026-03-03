@@ -14,10 +14,14 @@ const kindLabel = { one_off: 'Avulso', subscription: 'Assinatura', installment: 
 
 function AddModal({ onClose, onSave }) {
     const [tab, setTab] = useState('expense')
+    const today = new Date().toISOString().slice(0, 10)
     const [form, setForm] = useState({
-        expense_date: new Date().toISOString().slice(0, 10),
-        income_date: new Date().toISOString().slice(0, 10),
+        expense_date: today,
+        income_date: today,
+        installment_start_date: today,
         amount: '',
+        total_amount: '',
+        installments: '12',
         category: '',
         description: '',
     })
@@ -26,29 +30,46 @@ function AddModal({ onClose, onSave }) {
 
     async function submit(e) {
         e.preventDefault()
-        const amount = parseFloat(form.amount)
-        if (!amount || !form.category || !form.description) return
         if (tab === 'expense') {
+            const amount = parseFloat(form.amount)
+            if (!amount || !form.category || !form.description || !form.expense_date) return
             await api.addExpense({ expense_date: form.expense_date, amount, category: form.category, description: form.description })
-        } else {
+        } else if (tab === 'income') {
+            const amount = parseFloat(form.amount)
+            if (!amount || !form.category || !form.description || !form.income_date) return
             await api.addIncome({ income_date: form.income_date, amount, category: form.category, description: form.description })
+        } else {
+            const totalAmount = parseFloat(form.total_amount)
+            const installments = parseInt(form.installments, 10)
+            if (!totalAmount || !installments || !form.category || !form.description || !form.installment_start_date) return
+            await api.addInstallment({
+                start_date: form.installment_start_date,
+                total_amount: totalAmount,
+                installments,
+                category: form.category,
+                description: form.description,
+            })
         }
         onSave()
     }
 
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="glass-card w-full max-w-md p-6 animate-slide-up">
-                <div className="flex items-center justify-between mb-5">
-                    <h3 className="font-bold text-slate-100">Novo Lançamento</h3>
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+            <div className="panel w-full max-w-md p-8 animate-slide-up">
+                <div className="flex items-center justify-between mb-6 border-b border-[var(--border-color)] pb-4">
+                    <h3 className="text-xl text-white" style={{ fontFamily: '"DM Serif Text", serif' }}>Novo Lançamento</h3>
                     <button onClick={onClose} className="btn-ghost p-1.5"><X size={16} /></button>
                 </div>
 
-                <div className="flex gap-2 mb-5">
-                    {['expense', 'income'].map(t => (
-                        <button key={t} onClick={() => setTab(t)}
-                            className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${tab === t ? 'bg-violet-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-slate-200'}`}>
-                            {t === 'expense' ? 'Despesa' : 'Receita'}
+                <div className="flex gap-2 mb-6 p-1 bg-[var(--bg-surface)] border border-[var(--border-color)]">
+                    {[
+                        ['expense', 'Despesa'],
+                        ['income', 'Receita'],
+                        ['installment', 'Parcelado'],
+                    ].map(([key, label]) => (
+                        <button key={key} onClick={() => setTab(key)}
+                            className={`flex-1 py-2 text-xs font-mono uppercase tracking-wider transition-all ${tab === key ? 'bg-[var(--bg-panel)] text-white border border-[var(--border-strong)]' : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)] border border-transparent'}`}>
+                            {label}
                         </button>
                     ))}
                 </div>
@@ -56,15 +77,37 @@ function AddModal({ onClose, onSave }) {
                 <form onSubmit={submit} className="space-y-3">
                     <div>
                         <label className="label block mb-1">Data</label>
-                        <input type="date" className="input-field"
-                            value={tab === 'expense' ? form.expense_date : form.income_date}
-                            onChange={e => set(tab === 'expense' ? 'expense_date' : 'income_date', e.target.value)} />
+                        {tab === 'expense' && (
+                            <input type="date" className="input-field" value={form.expense_date} onChange={e => set('expense_date', e.target.value)} />
+                        )}
+                        {tab === 'income' && (
+                            <input type="date" className="input-field" value={form.income_date} onChange={e => set('income_date', e.target.value)} />
+                        )}
+                        {tab === 'installment' && (
+                            <input type="date" className="input-field" value={form.installment_start_date} onChange={e => set('installment_start_date', e.target.value)} />
+                        )}
                     </div>
-                    <div>
-                        <label className="label block mb-1">Valor (R$)</label>
-                        <input type="number" step="0.01" min="0" className="input-field" placeholder="0,00"
-                            value={form.amount} onChange={e => set('amount', e.target.value)} />
-                    </div>
+                    {tab !== 'installment' && (
+                        <div>
+                            <label className="label block mb-1">Valor (R$)</label>
+                            <input type="number" step="0.01" min="0" className="input-field" placeholder="0,00"
+                                value={form.amount} onChange={e => set('amount', e.target.value)} />
+                        </div>
+                    )}
+                    {tab === 'installment' && (
+                        <div className="grid grid-cols-2 gap-2">
+                            <div>
+                                <label className="label block mb-1">Valor Total (R$)</label>
+                                <input type="number" step="0.01" min="0" className="input-field"
+                                    value={form.total_amount} onChange={e => set('total_amount', e.target.value)} />
+                            </div>
+                            <div>
+                                <label className="label block mb-1">Parcelas</label>
+                                <input type="number" min="2" max="120" className="input-field"
+                                    value={form.installments} onChange={e => set('installments', e.target.value)} />
+                            </div>
+                        </div>
+                    )}
                     <div>
                         <label className="label block mb-1">Categoria</label>
                         <input className="input-field" placeholder="ex: Alimentação"
@@ -114,14 +157,14 @@ export default function Overview() {
     return (
         <div className="space-y-6 animate-fade-in">
             {/* Header */}
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between border-b border-[var(--border-color)] pb-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-white">Visão Geral</h1>
-                    <p className="text-sm text-slate-400 mt-0.5">Seu painel financeiro pessoal</p>
+                    <h1 className="text-4xl text-white tracking-tight leading-none" style={{ fontFamily: '"DM Serif Text", serif' }}>Visão Geral</h1>
+                    <p className="text-[11px] text-[var(--text-muted)] mt-3 font-mono uppercase tracking-widest">Painel Financeiro Pessoal</p>
                 </div>
-                <div className="flex items-center gap-2 sm:gap-3">
-                    {month && <MonthPicker value={month} onChange={setMonth} />}
-                    <button onClick={() => setShowModal(true)} className="btn-primary flex items-center gap-2 whitespace-nowrap">
+                <div className="w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+                    {month && <MonthPicker value={month} onChange={setMonth} className="w-full sm:w-auto justify-center sm:justify-start" />}
+                    <button onClick={() => setShowModal(true)} className="btn-primary flex items-center justify-center gap-2 whitespace-nowrap w-full sm:w-auto">
                         <Plus size={15} /> Lançamento
                     </button>
                 </div>
@@ -173,14 +216,14 @@ export default function Overview() {
             </div>
 
             {/* Recent transactions */}
-            <div className="glass-card">
-                <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-slate-800/60">
-                    <div className="font-semibold text-slate-200">Últimas Transações</div>
-                    <a href="/transactions" className="text-xs text-violet-400 hover:text-violet-300 transition-colors">Ver todas →</a>
+            <div className="panel">
+                <div className="flex items-center justify-between px-4 sm:px-6 py-5 border-b border-[var(--border-color)]">
+                    <div className="text-xl text-white" style={{ fontFamily: '"DM Serif Text", serif' }}>Últimas Transações</div>
+                    <a href="/transactions" className="text-[10px] font-mono uppercase tracking-widest text-[var(--text-muted)] hover:text-white transition-colors">Ver Todas →</a>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full">
-                        <thead className="border-b border-slate-800/40">
+                        <thead className="bg-[var(--bg-panel)]">
                             <tr>
                                 <th className="table-header text-left">Data</th>
                                 <th className="table-header text-left">Descrição</th>
@@ -189,17 +232,17 @@ export default function Overview() {
                                 <th className="table-header text-right">Valor</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-800/30">
+                        <tbody className="divide-y divide-[#1a1a1a]">
                             {expenses.length === 0 && !loading && (
-                                <tr><td colSpan={5} className="table-cell text-center text-slate-500">Nenhuma despesa este mês. Use "Lançamento" para começar.</td></tr>
+                                <tr><td colSpan={5} className="table-cell text-center text-[var(--text-muted)] font-mono text-xs uppercase py-8">Nenhuma despesa este mês.</td></tr>
                             )}
                             {expenses.map((e) => (
-                                <tr key={e.id} className="hover:bg-slate-800/30 transition-colors">
-                                    <td className="table-cell text-slate-400">{e.expense_date}</td>
-                                    <td className="table-cell text-slate-200 font-medium">{e.description}</td>
+                                <tr key={e.id} className="hover:bg-[var(--bg-surface)] transition-colors group">
+                                    <td className="table-cell text-[var(--text-muted)] font-mono text-[11px] group-hover:text-[var(--text-secondary)] whitespace-nowrap">{e.expense_date}</td>
+                                    <td className="table-cell text-[#ccc] group-hover:text-white">{e.description}</td>
                                     <td className="table-cell"><span className="badge-blue">{e.category}</span></td>
                                     <td className="table-cell"><span className={kindBadge[e.kind] ?? 'badge-blue'}>{kindLabel[e.kind] ?? e.kind}</span></td>
-                                    <td className="table-cell text-right font-semibold text-red-400">-{fmt(e.amount)}</td>
+                                    <td className="table-cell text-right font-mono text-sm text-[var(--color-expense)] group-hover:opacity-80">-{fmt(e.amount)}</td>
                                 </tr>
                             ))}
                         </tbody>

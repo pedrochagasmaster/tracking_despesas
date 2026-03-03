@@ -38,10 +38,10 @@ function AddSubModal({ onClose, onSave, initial = null }) {
         onSave()
     }
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="glass-card w-full max-w-md p-6 animate-slide-up">
-                <div className="flex items-center justify-between mb-5">
-                    <h3 className="font-bold text-slate-100">{editing ? 'Editar Assinatura' : 'Nova Assinatura'}</h3>
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+            <div className="panel w-full max-w-md p-8 animate-slide-up">
+                <div className="flex items-center justify-between mb-6 border-b border-[var(--border-color)] pb-4">
+                    <h3 className="text-xl text-white" style={{ fontFamily: '"DM Serif Text", serif' }}>{editing ? 'Editar Assinatura' : 'Nova Assinatura'}</h3>
                     <button onClick={onClose} className="btn-ghost p-1.5"><X size={16} /></button>
                 </div>
                 <form onSubmit={submit} className="space-y-3">
@@ -77,49 +77,49 @@ function AddSubModal({ onClose, onSave, initial = null }) {
 function SubCard({ sub, onEdit, onDelete }) {
     const monthly = sub.frequency === 'monthly' ? sub.amount : sub.amount / 12
     const freqLabel = sub.frequency === 'monthly' ? 'Mensal' : 'Anual'
-    const freqBadge = sub.frequency === 'monthly' ? 'badge-blue' : 'badge-yellow'
 
     return (
-        <div className={`glass-card p-5 flex flex-col gap-3 hover:border-slate-600/70 transition-all ${!sub.active ? 'opacity-50' : ''}`}>
-            <div className="flex items-start justify-between gap-2">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-violet-500/15 flex items-center justify-center">
-                        <Repeat size={18} className="text-violet-400" />
+        <div className={`panel interactive-card p-6 flex flex-col group ${!sub.active ? 'opacity-40 grayscale' : ''}`}>
+            <div className="flex items-start justify-between gap-3 mb-6">
+                <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 border border-[var(--border-color)] flex items-center justify-center">
+                        <Repeat size={16} className="text-[var(--text-secondary)] group-hover:text-white transition-colors" />
                     </div>
                     <div>
-                        <div className="font-semibold text-slate-100">{sub.name}</div>
-                        <div className="flex items-center gap-1.5 mt-0.5">
-                            <Tag size={11} className="text-slate-600" />
-                            <span className="text-xs text-slate-500">{sub.category}</span>
+                        <div className="font-semibold text-white tracking-wide">{sub.name}</div>
+                        <div className="flex items-center gap-2 mt-1">
+                            <Tag size={10} className="text-[var(--text-muted)]" />
+                            <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--text-secondary)]">{sub.category}</span>
                         </div>
                     </div>
                 </div>
-                <div className="flex items-center gap-2">
-                    <span className={freqBadge}>{freqLabel}</span>
-                    <button type="button" onClick={() => onEdit(sub)} className="btn-ghost p-1.5" title="Editar assinatura">
+                <div className="flex items-center gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button type="button" onClick={() => onEdit(sub)} className="btn-ghost tap-target p-1.5" title="Editar">
                         <PenSquare size={14} />
                     </button>
-                    <button type="button" onClick={() => onDelete(sub)} className="btn-ghost p-1.5 text-rose-300 hover:text-rose-200" title="Excluir assinatura">
+                    <button type="button" onClick={() => onDelete(sub)} className="btn-ghost tap-target p-1.5 text-[var(--color-expense)] hover:text-red-300" title="Excluir">
                         <Trash2 size={14} />
                     </button>
                 </div>
             </div>
 
-            <div className="flex items-end justify-between pt-1 border-t border-slate-700/40">
+            <div className="flex items-end justify-between pt-4 border-t border-[var(--border-color)] mb-3">
                 <div>
-                    <div className="text-xs text-slate-600">Cobrança</div>
-                    <div className="font-bold text-lg text-white">{fmt(sub.amount)}</div>
+                    <div className="text-[10px] font-mono uppercase tracking-widest text-[var(--text-muted)] mb-1">Cobrança {freqLabel}</div>
+                    <div className="text-2xl text-white" style={{ fontFamily: '"DM Serif Text", serif' }}>{fmt(sub.amount)}</div>
                 </div>
                 <div className="text-right">
-                    <div className="text-xs text-slate-600">Equivalente/mês</div>
-                    <div className="text-sm font-semibold text-violet-400">{fmtMonth(monthly)}</div>
+                    <div className="text-[10px] font-mono uppercase tracking-widest text-[var(--text-muted)] mb-1">Equivalente/mês</div>
+                    <div className="text-sm font-mono text-[var(--color-income)]">{fmtMonth(monthly)}</div>
                 </div>
             </div>
 
-            <div className="flex items-center gap-1.5 text-xs text-slate-600">
-                <CalendarDays size={11} />
-                <span>Desde {sub.start_date}</span>
-                {!sub.active && <span className="ml-auto badge bg-slate-700/50 text-slate-500">Inativo</span>}
+            <div className="flex items-center justify-between mt-auto pt-1 text-[10px] font-mono uppercase tracking-widest text-[var(--text-muted)]">
+                <div className="flex items-center gap-1.5">
+                    <CalendarDays size={10} />
+                    <span>Desde {sub.start_date}</span>
+                </div>
+                {!sub.active && <span className="text-[var(--color-warn)] border border-[var(--color-warn)] px-1.5 py-0.5">Inativo</span>}
             </div>
         </div>
     )
@@ -176,13 +176,13 @@ export default function Subscriptions() {
 
     return (
         <div className="space-y-6 animate-fade-in">
-            <div className="sticky top-0 z-20 -mx-4 sm:mx-0 px-4 sm:px-0 py-3 bg-[#050b22]/95 backdrop-blur border-b border-slate-800/60 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between border-b border-[var(--border-color)] pb-6 mt-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-white">Assinaturas</h1>
-                    <p className="text-sm text-slate-400 mt-0.5">Serviços recorrentes ativos</p>
+                    <h1 className="text-4xl text-white tracking-tight leading-none" style={{ fontFamily: '"DM Serif Text", serif' }}>Assinaturas</h1>
+                    <p className="text-[11px] text-[var(--text-muted)] mt-3 font-mono uppercase tracking-widest">Serviços recorrentes ativos</p>
                 </div>
                 <div className="w-full sm:w-auto flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <MonthPicker value={runMonth} onChange={setRunMonth} />
+                    <MonthPicker value={runMonth} onChange={setRunMonth} className="w-full sm:w-auto justify-center sm:justify-start" />
                     <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
                         <button
                             onClick={runForMonth}
@@ -203,29 +203,29 @@ export default function Subscriptions() {
             </div>
 
             {runStatus && (
-                <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+                <div className="status-success px-4 py-3 text-sm">
                     {runStatus}
                 </div>
             )}
             {runError && (
-                <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+                <div className="status-error px-4 py-3 text-sm">
                     {runError}
                 </div>
             )}
 
             {/* Totals */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="glass-card px-5 py-4">
-                    <div className="label mb-1">Assinaturas Ativas</div>
-                    <div className="text-2xl font-bold text-white">{active.length}</div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-b border-[var(--border-color)] pb-6">
+                <div className="panel p-6 border-t-2 border-t-[#333]">
+                    <div className="label mb-2" style={{ fontFamily: '"Space Mono", monospace' }}>Assinaturas Ativas</div>
+                    <div className="text-3xl text-white" style={{ fontFamily: '"DM Serif Text", serif' }}>{active.length}</div>
                 </div>
-                <div className="glass-card px-5 py-4">
-                    <div className="label mb-1">Custo Mensal</div>
-                    <div className="text-2xl font-bold text-violet-400">{fmt(totalMonthly)}</div>
+                <div className="panel p-6 border-t-2 border-t-[var(--color-income)]">
+                    <div className="label mb-2" style={{ fontFamily: '"Space Mono", monospace' }}>Custo Mensal</div>
+                    <div className="text-3xl text-[var(--color-income)]" style={{ fontFamily: '"DM Serif Text", serif' }}>{fmt(totalMonthly)}</div>
                 </div>
-                <div className="glass-card px-5 py-4">
-                    <div className="label mb-1">Custo Anual</div>
-                    <div className="text-2xl font-bold text-fuchsia-400">{fmt(totalYearly)}</div>
+                <div className="panel p-6 border-t-2 border-t-[#90a0ad]">
+                    <div className="label mb-2" style={{ fontFamily: '"Space Mono", monospace' }}>Custo Anual</div>
+                    <div className="text-3xl text-[#90a0ad]" style={{ fontFamily: '"DM Serif Text", serif' }}>{fmt(totalYearly)}</div>
                 </div>
             </div>
 
@@ -236,10 +236,10 @@ export default function Subscriptions() {
             )}
 
             {!loading && active.length === 0 && (
-                <div className="glass-card p-12 text-center">
-                    <Repeat size={36} className="mx-auto text-slate-700 mb-3" />
-                    <div className="text-slate-400">Nenhuma assinatura ativa</div>
-                    <button onClick={() => setModalState({ open: true, initial: null })} className="btn-primary mt-4">Adicionar assinatura</button>
+                <div className="panel p-16 text-center">
+                    <Repeat size={32} className="mx-auto text-[#333] mb-4" />
+                    <div className="text-[var(--text-muted)] font-mono text-xs uppercase tracking-widest">Nenhuma assinatura ativa</div>
+                    <button onClick={() => setModalState({ open: true, initial: null })} className="btn-primary mt-6">Adicionar assinatura</button>
                 </div>
             )}
 
@@ -250,7 +250,7 @@ export default function Subscriptions() {
                     </div>
                     {inactive.length > 0 && (
                         <>
-                            <div className="text-sm font-medium text-slate-500 pt-2">Inativas ({inactive.length})</div>
+                            <div className="text-[11px] font-mono tracking-widest uppercase text-[var(--text-muted)] pt-4 pb-2 border-b border-[var(--border-color)]">Inativas ({inactive.length})</div>
                             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                                 {inactive.map(s => <SubCard key={s.id} sub={s} onEdit={(item) => setModalState({ open: true, initial: item })} onDelete={onDeleteSub} />)}
                             </div>

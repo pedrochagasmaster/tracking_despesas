@@ -10,35 +10,37 @@ function BudgetRow({ item, onEdit, onDelete, busy }) {
   const over = item.remaining < 0
   const pct = item.pct
 
-  const barColor = pct >= 90 ? 'bg-red-500' : pct >= 70 ? 'bg-amber-500' : 'bg-emerald-500'
-  const textColor = pct >= 90 ? 'text-red-400' : pct >= 70 ? 'text-amber-400' : 'text-emerald-400'
+  const barColor = pct >= 90 ? 'bg-[var(--color-expense)]' : pct >= 70 ? 'bg-[var(--color-warn)]' : 'bg-[var(--color-income)]'
+  const textColor = pct >= 90 ? 'text-[var(--color-expense)]' : pct >= 70 ? 'text-[var(--color-warn)]' : 'text-[var(--color-income)]'
 
   return (
-    <div className="p-5 border-b border-slate-800/30 last:border-b-0 hover:bg-slate-800/20 transition-colors">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-2.5">
-        <div className="flex items-center gap-2.5">
-          <div className={`w-2 h-2 rounded-full ${barColor}`} />
-          <span className="font-medium text-slate-200">{item.category}</span>
+    <div className="interactive-card p-6 border-b border-[var(--border-color)] last:border-b-0 hover:bg-[var(--bg-surface)] group">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <div className={`w-1.5 h-1.5 ${barColor}`} />
+          <span className="font-semibold text-white tracking-wide">{item.category}</span>
         </div>
-        <div className="flex flex-wrap items-center gap-3 text-sm">
-          <span className="text-slate-500">{fmt(item.spent)} / {fmt(item.budgeted)}</span>
-          <span className={`font-bold ${textColor}`}>{pct.toFixed(0)}%</span>
-          {over && <span className="badge-red">ACIMA</span>}
-          <button type="button" disabled={busy} onClick={() => onEdit(item)} className="btn-ghost p-1.5" title="Editar orçamento">
-            <PenSquare size={14} />
-          </button>
-          <button type="button" disabled={busy} onClick={() => onDelete(item)} className="btn-ghost p-1.5 text-red-300 hover:text-red-200" title="Excluir orçamento">
-            <Trash2 size={14} />
-          </button>
+        <div className="flex flex-wrap items-center gap-4 text-sm">
+          <span className="font-mono text-xs text-[var(--text-secondary)]">{fmt(item.spent)} / <span className="text-[#ccc]">{fmt(item.budgeted)}</span></span>
+          <span className={`font-mono text-sm font-bold ${textColor}`}>{pct.toFixed(0)}%</span>
+          {over && <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--color-expense)] border border-[var(--color-expense)] px-1.5 py-0.5">ACIMA</span>}
+          <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity ml-2">
+            <button type="button" disabled={busy} onClick={() => onEdit(item)} className="btn-ghost tap-target p-1.5" title="Editar">
+              <PenSquare size={14} />
+            </button>
+            <button type="button" disabled={busy} onClick={() => onDelete(item)} className="btn-ghost tap-target p-1.5 text-[var(--color-expense)] hover:text-red-300" title="Excluir">
+              <Trash2 size={14} />
+            </button>
+          </div>
         </div>
       </div>
-      <div className="bg-slate-900/60 rounded-full h-2 overflow-hidden">
+      <div className="bg-[#1a1a1a] h-1 w-full overflow-hidden">
         <div
-          className={`h-full rounded-full transition-all duration-700 ${barColor}`}
+          className={`h-full transition-all duration-700 ${barColor}`}
           style={{ width: `${Math.min(pct, 100)}%` }}
         />
       </div>
-      <div className="flex justify-between mt-1.5 text-xs text-slate-600">
+      <div className="flex justify-between mt-3 text-[10px] font-mono uppercase tracking-widest text-[var(--text-muted)]">
         <span>{over ? 'Excedeu em' : 'Restante'}: {fmt(Math.abs(item.remaining))}</span>
       </div>
     </div>
@@ -83,10 +85,10 @@ function BudgetModal({ initial, onClose, onSave }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="glass-card w-full max-w-sm p-6 animate-slide-up">
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="font-bold text-slate-100">{editing ? 'Editar Orçamento' : 'Definir Orçamento'}</h3>
+    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+      <div className="panel w-full max-w-sm p-8 animate-slide-up">
+        <div className="flex items-center justify-between mb-6 border-b border-[var(--border-color)] pb-4">
+          <h3 className="text-xl text-white" style={{ fontFamily: '"DM Serif Text", serif' }}>{editing ? 'Editar Orçamento' : 'Definir Orçamento'}</h3>
           <button onClick={onClose} className="btn-ghost p-1.5"><X size={16} /></button>
         </div>
         <form onSubmit={submit} className="space-y-3">
@@ -144,14 +146,14 @@ export default function Budgets() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between border-b border-[var(--border-color)] pb-6 mt-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Orçamentos</h1>
-          <p className="text-sm text-slate-400 mt-0.5">Metas de gasto por categoria</p>
+          <h1 className="text-4xl text-white tracking-tight leading-none" style={{ fontFamily: '"DM Serif Text", serif' }}>Orçamentos</h1>
+          <p className="text-[11px] text-[var(--text-muted)] mt-3 font-mono uppercase tracking-widest">Metas de gasto por categoria</p>
         </div>
-        <div className="flex items-center gap-3">
-          {month && <MonthPicker value={month} onChange={setMonth} />}
-          <button onClick={() => setModalState({ open: true, initial: null })} className="btn-primary flex items-center gap-2 whitespace-nowrap">
+        <div className="w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+          {month && <MonthPicker value={month} onChange={setMonth} className="w-full sm:w-auto justify-center sm:justify-start" />}
+          <button onClick={() => setModalState({ open: true, initial: null })} className="btn-primary flex items-center justify-center gap-2 whitespace-nowrap w-full sm:w-auto">
             <Plus size={15} /> Orçamento
           </button>
         </div>
@@ -164,18 +166,18 @@ export default function Budgets() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="glass-card px-5 py-4">
-          <div className="label mb-1">Total Orçado</div>
-          <div className="text-2xl font-bold text-white">{fmt(totalBudget)}</div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-b border-[var(--border-color)] pb-6">
+        <div className="panel p-6 border-t-2 border-t-[#333]">
+          <div className="label mb-2" style={{ fontFamily: '"Space Mono", monospace' }}>Total Orçado</div>
+          <div className="text-3xl text-white" style={{ fontFamily: '"DM Serif Text", serif' }}>{fmt(totalBudget)}</div>
         </div>
-        <div className="glass-card px-5 py-4">
-          <div className="label mb-1">Total Gasto</div>
-          <div className="text-2xl font-bold text-violet-400">{fmt(totalSpent)}</div>
+        <div className="panel p-6 border-t-2 border-t-[var(--color-info)]">
+          <div className="label mb-2" style={{ fontFamily: '"Space Mono", monospace' }}>Total Gasto</div>
+          <div className="text-3xl text-[var(--color-info)]" style={{ fontFamily: '"DM Serif Text", serif' }}>{fmt(totalSpent)}</div>
         </div>
-        <div className="glass-card px-5 py-4">
-          <div className="label mb-1">Categorias Acima</div>
-          <div className={`text-2xl font-bold ${overBudget > 0 ? 'text-red-400' : 'text-emerald-400'}`}>{overBudget}</div>
+        <div className="panel p-6 border-t-2 border-t-[var(--color-warn)]">
+          <div className="label mb-2" style={{ fontFamily: '"Space Mono", monospace' }}>Categorias Acima</div>
+          <div className={`text-3xl ${overBudget > 0 ? 'text-[var(--color-expense)]' : 'text-[var(--color-income)]'}`} style={{ fontFamily: '"DM Serif Text", serif' }}>{overBudget}</div>
         </div>
       </div>
 
@@ -184,15 +186,15 @@ export default function Budgets() {
       )}
 
       {!loading && budgets.length === 0 && (
-        <div className="glass-card p-12 text-center">
-          <Target size={36} className="mx-auto text-slate-700 mb-3" />
-          <div className="text-slate-500">Nenhum orçamento definido para a conta</div>
-          <button onClick={() => setModalState({ open: true, initial: null })} className="btn-primary mt-4">Definir orçamento</button>
+        <div className="panel p-16 text-center">
+          <Target size={32} className="mx-auto text-[#333] mb-4" />
+          <div className="text-[var(--text-muted)] font-mono text-xs uppercase tracking-widest">Nenhum orçamento definido</div>
+          <button onClick={() => setModalState({ open: true, initial: null })} className="btn-primary mt-6">Definir orçamento</button>
         </div>
       )}
 
       {!loading && budgets.length > 0 && (
-        <div className="glass-card overflow-hidden">
+        <div className="panel overflow-hidden border-[var(--border-color)]">
           {budgets.map((b) => (
             <BudgetRow
               key={b.category}

@@ -1,137 +1,339 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --bg-base: #070a0f;
+    --bg-panel: #0f141c;
+    --bg-surface: #151b25;
+    --border-color: #273242;
+    --border-strong: #3a4a61;
+    --text-primary: #f3f5f8;
+    --text-secondary: #b2bccb;
+    --text-muted: #98a4b8;
+    --color-income: #86d69a;
+    --color-expense: #f3a0a0;
+    --color-info: #8fb7ff;
+    --color-warn: #f0c07c;
+  }
+
   body {
-    @apply bg-slate-950 text-slate-100 antialiased;
-    font-family: "Plus Jakarta Sans", sans-serif;
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+    font-family: "Manrope", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
   }
 
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "DM Serif Text", serif;
+    font-weight: 400;
+  }
+
   * {
-    @apply border-slate-700;
+    border-color: var(--border-color);
   }
 }
 
 @layer components {
+  .panel {
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: 0;
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 3%, transparent);
+  }
+
   .glass-card {
-    @apply bg-slate-800/65 backdrop-blur-sm border border-slate-700/60 rounded-2xl;
+    background-color: color-mix(in srgb, var(--bg-panel) 90%, #000 10%);
+    border: 1px solid var(--border-color);
+    border-radius: 0;
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 3%, transparent);
+  }
+
+  .surface {
+    background-color: var(--bg-surface);
   }
 
   .kpi-card {
-    @apply glass-card p-5 lg:p-6 flex flex-col gap-2 hover:border-slate-500/80 hover:-translate-y-0.5 transition-all duration-300;
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .kpi-card:hover {
+    border-color: var(--border-strong);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 28px color-mix(in srgb, #000 45%, transparent);
   }
 
   .btn-primary {
-    @apply bg-cyan-600 hover:bg-cyan-500 text-white font-semibold px-4 py-2 rounded-xl transition-all duration-200 active:scale-95 text-sm shadow-lg shadow-cyan-900/30;
+    background-color: #ffffff;
+    color: #0a0d12;
+    font-family: "Manrope", sans-serif;
+    font-weight: 700;
+    padding: 0.625rem 1.25rem;
+    border: 1px solid #ffffff;
+    transition: all 0.2s ease, box-shadow 0.2s ease;
+    font-size: 0.875rem;
+  }
+
+  .btn-primary:hover {
+    background-color: #f2f4f8;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-info) 45%, transparent);
+  }
+
+  .btn-primary:active {
+    transform: scale(0.98);
   }
 
   .btn-ghost {
-    @apply text-slate-300 hover:text-white hover:bg-slate-700/50 px-3 py-2 rounded-xl transition-all duration-200 text-sm;
+    background-color: color-mix(in srgb, var(--bg-panel) 92%, #000 8%);
+    color: var(--text-secondary);
+    font-family: "Manrope", sans-serif;
+    font-weight: 500;
+    padding: 0.625rem 1rem;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+  }
+
+  .btn-ghost:hover {
+    color: var(--text-primary);
+    border-color: var(--border-strong);
+    background-color: var(--bg-surface);
+  }
+
+  .btn-ghost:active,
+  .btn-primary:active {
+    transform: translateY(1px);
+  }
+
+  .interactive-card {
+    transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .interactive-card:hover {
+    transform: translateY(-1px);
+    border-color: var(--border-strong);
+    box-shadow: 0 8px 24px color-mix(in srgb, #000 35%, transparent);
   }
 
   .input-field {
-    @apply bg-slate-800 border border-slate-600 text-slate-100 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/60 focus:border-cyan-500 placeholder:text-slate-500 transition-all duration-200 w-full;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+    font-family: "Space Mono", monospace;
+    width: 100%;
+    transition: all 0.2s ease;
+    border-radius: 0;
+    caret-color: var(--color-info);
+  }
+
+  .input-field:focus {
+    outline: none;
+    border-color: var(--border-strong);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-info) 22%, transparent);
+  }
+
+  .input-field::placeholder {
+    color: var(--text-muted);
   }
 
   .label {
-    @apply text-xs font-medium text-slate-300 uppercase tracking-wider;
-    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-family: "Space Mono", monospace;
   }
 
   .badge {
-    @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-family: "Space Mono", monospace;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
   }
 
   .badge-green {
-    @apply badge bg-emerald-500/15 text-emerald-400;
+    border-color: color-mix(in srgb, var(--color-income) 46%, transparent);
+    background-color: color-mix(in srgb, var(--color-income) 15%, var(--bg-panel));
+    color: var(--color-income);
   }
 
   .badge-red {
-    @apply badge bg-red-500/15 text-red-400;
+    border-color: color-mix(in srgb, var(--color-expense) 46%, transparent);
+    background-color: color-mix(in srgb, var(--color-expense) 15%, var(--bg-panel));
+    color: var(--color-expense);
   }
 
   .badge-yellow {
-    @apply badge bg-amber-500/15 text-amber-400;
+    border-color: color-mix(in srgb, var(--color-warn) 46%, transparent);
+    background-color: color-mix(in srgb, var(--color-warn) 15%, var(--bg-panel));
+    color: var(--color-warn);
   }
 
   .badge-violet {
-    @apply badge bg-violet-500/15 text-violet-400;
+    border-color: color-mix(in srgb, #9d90ad 46%, transparent);
+    background-color: color-mix(in srgb, #9d90ad 15%, var(--bg-panel));
+    color: #b49fd1;
   }
 
   .badge-blue {
-    @apply badge bg-blue-500/15 text-blue-400;
+    border-color: color-mix(in srgb, var(--color-info) 46%, transparent);
+    background-color: color-mix(in srgb, var(--color-info) 15%, var(--bg-panel));
+    color: var(--color-info);
   }
 
   .nav-item {
-    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    font-family: "Manrope", sans-serif;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border-left: 2px solid transparent;
   }
 
   .nav-item-active {
-    @apply nav-item bg-cyan-600/20 text-cyan-300 border border-cyan-500/30;
+    color: var(--text-primary);
+    background-color: var(--bg-surface);
+    border-left-color: var(--color-info);
   }
 
   .nav-item-inactive {
-    @apply nav-item text-slate-400 hover:text-slate-100 hover:bg-slate-800/60;
+    color: var(--text-secondary);
+  }
+
+  .nav-item-inactive:hover {
+    color: var(--text-primary);
+    background-color: color-mix(in srgb, var(--bg-surface) 80%, #000 20%);
   }
 
   .table-header {
-    @apply text-xs uppercase tracking-wider text-slate-400 font-semibold py-3 px-4;
-    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    padding: 1rem;
+    font-family: "Space Mono", monospace;
+    font-weight: 500;
+    border-bottom: 1px solid var(--border-color);
   }
 
   .table-cell {
-    @apply py-3.5 px-4 text-sm;
+    padding: 1rem;
+    font-size: 0.875rem;
+    border-bottom: 1px solid var(--border-color);
+    font-family: "Manrope", sans-serif;
   }
 
   .section-shell {
-    @apply glass-card p-4 sm:p-6;
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    padding: 1.5rem;
   }
 
   .section-title {
-    @apply text-base sm:text-lg font-semibold text-slate-100;
+    font-family: "DM Serif Text", serif;
+    font-size: 1.5rem;
+    color: var(--text-primary);
   }
 
   .section-subtitle {
-    @apply text-xs sm:text-sm text-slate-400 mt-0.5;
+    font-family: "Manrope", sans-serif;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
   }
 
   .stat-chip {
-    @apply inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-600/70 bg-slate-800/70 text-xs font-medium text-slate-300;
-    font-family: "IBM Plex Mono", monospace;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0.75rem;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-surface);
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    font-family: "Space Mono", monospace;
+  }
+
+  .status-success {
+    border: 1px solid color-mix(in srgb, var(--color-income) 50%, transparent);
+    background-color: color-mix(in srgb, var(--color-income) 14%, transparent);
+    color: var(--color-income);
+  }
+
+  .status-error {
+    border: 1px solid color-mix(in srgb, var(--color-expense) 55%, transparent);
+    background-color: color-mix(in srgb, var(--color-expense) 14%, transparent);
+    color: var(--color-expense);
+  }
+
+  .status-warn {
+    border: 1px solid color-mix(in srgb, var(--color-warn) 55%, transparent);
+    background-color: color-mix(in srgb, var(--color-warn) 14%, transparent);
+    color: var(--color-warn);
+  }
+
+  .status-info {
+    border: 1px solid color-mix(in srgb, var(--color-info) 55%, transparent);
+    background-color: color-mix(in srgb, var(--color-info) 14%, transparent);
+    color: var(--color-info);
+  }
+
+  .tap-target {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 }
 
 @layer utilities {
-  .text-gradient-violet {
-    @apply bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent;
-  }
-
-  .text-gradient-emerald {
-    @apply bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent;
-  }
-
-  .glow-violet {
-    box-shadow: 0 0 30px -5px rgba(34, 211, 238, 0.32);
-  }
-
-  .glow-cyan {
-    box-shadow: 0 0 36px -8px rgba(8, 145, 178, 0.6);
-  }
-
-  .glow-emerald {
-    box-shadow: 0 0 30px -5px rgba(52, 211, 153, 0.3);
+  .text-mono {
+    font-family: "Space Mono", monospace;
   }
 
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: #334155 transparent;
+    scrollbar-color: var(--border-color) transparent;
   }
 
   .scrollbar-thin::-webkit-scrollbar {
-    width: 6px;
+    width: 4px;
+    height: 4px;
   }
 
   .scrollbar-thin::-webkit-scrollbar-track {
@@ -139,7 +341,91 @@
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: #334155;
-    border-radius: 3px;
+    background-color: var(--border-color);
+    border-radius: 0;
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.28s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.3s ease-out;
+  }
+
+  .animate-pulse-soft {
+    animation: pulse-soft 1.2s ease-in-out infinite;
+  }
+}
+
+@media (max-width: 640px) {
+  .btn-primary,
+  .btn-ghost {
+    min-height: 2.75rem;
+  }
+
+  .label {
+    font-size: 0.75rem;
+  }
+
+  .section-title {
+    font-size: 1.25rem;
+  }
+
+  .section-subtitle {
+    font-size: 0.8rem;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-info) 28%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { api } from '../api/client'
-import { Check, CircleSlash2, Download, RefreshCw, Tags } from 'lucide-react'
+import { Check, CircleSlash2, RefreshCw, Inbox, Upload } from 'lucide-react'
 
 const fmt = (value) => {
   const n = Number(value)
@@ -8,120 +8,59 @@ const fmt = (value) => {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(n)
 }
 
-function KeepToggle({ keep, onKeep, onDrop, busy }) {
-  return (
-    <div className="inline-flex rounded-xl border border-slate-700/70 bg-slate-900/60 p-1">
-      <button
-        type="button"
-        onClick={onKeep}
-        disabled={busy}
-        className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition ${keep ? 'bg-emerald-500/25 text-emerald-300' : 'text-slate-400 hover:text-slate-200'}`}
-      >
-        <span className="inline-flex items-center gap-1">
-          <Check size={13} />
-          Manter
-        </span>
-      </button>
-      <button
-        type="button"
-        onClick={onDrop}
-        disabled={busy}
-        className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition ${!keep ? 'bg-rose-500/25 text-rose-300' : 'text-slate-400 hover:text-slate-200'}`}
-      >
-        <span className="inline-flex items-center gap-1">
-          <CircleSlash2 size={13} />
-          Descartar
-        </span>
-      </button>
-    </div>
-  )
-}
-
 function normalizeLoadError(err) {
   const text = String(err?.message || '')
   if (text === 'Not Found' || text.includes('404')) {
-    return 'API de curadoria não encontrada. Reinicie o backend para carregar os endpoints /api/curation/*.'
+    return 'API de inbox não encontrada. Reinicie o backend para carregar os endpoints /api/inbox/*.'
   }
-  if (text.includes('CSV not found')) {
-    return 'Arquivo CSV de curadoria não foi encontrado. Gere o merged CSV antes de abrir esta tela.'
-  }
-  return text || 'Falha ao carregar curadoria.'
-}
-
-function isNotFoundError(err) {
-  const text = String(err?.message || '').toLowerCase()
-  return text.includes('404') || text.includes('not found')
+  return text || 'Falha ao carregar inbox.'
 }
 
 export default function Curation() {
-  const [meta, setMeta] = useState({ csv_file: '', available_csv_files: [], categories: [] })
-  const [selectedFile, setSelectedFile] = useState('')
+  const [meta, setMeta] = useState({ categories: [], stats: { pending: 0, excluded: 0, imported: 0, total: 0 } })
   const [rows, setRows] = useState([])
-  const [view, setView] = useState('uncategorized')
-  const [dateFrom, setDateFrom] = useState('')
-  const [dateTo, setDateTo] = useState('')
+  const [view, setView] = useState('pending')
+  const [sortBy, setSortBy] = useState('tx_date')
+  const [sortDir, setSortDir] = useState('desc')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [savingRow, setSavingRow] = useState(null)
-  const [exportStatus, setExportStatus] = useState('')
-  const [importStatus, setImportStatus] = useState('')
   const [importing, setImporting] = useState(false)
-  const [rangeStatus, setRangeStatus] = useState('')
-  const [applyingRange, setApplyingRange] = useState(false)
-  const lastAutoRangeKey = useRef('')
+  const [importStatus, setImportStatus] = useState('')
 
   const load = useCallback(async () => {
     setLoading(true)
     setError('')
     try {
       const [metaRes, rowsRes] = await Promise.all([
-        api.curationMeta(selectedFile || undefined),
-        api.curationTransactions({
-          file: selectedFile || undefined,
-          view,
-          limit: 1200,
-          dateFrom: dateFrom || undefined,
-          dateTo: dateTo || undefined,
-        }),
+        api.inboxMeta(),
+        api.inboxTransactions({ view, limit: 1200, sortBy, sortDir }),
       ])
       setMeta(metaRes)
-      if (!selectedFile && metaRes.csv_file) {
-        setSelectedFile(metaRes.csv_file)
-      }
       setRows(rowsRes.items || [])
     } catch (err) {
       setError(normalizeLoadError(err))
     } finally {
       setLoading(false)
     }
-  }, [view, selectedFile, dateFrom, dateTo])
+  }, [view, sortBy, sortDir])
 
   useEffect(() => {
     load()
   }, [load])
 
   const stats = useMemo(() => {
-    const keepCount = rows.filter((r) => r.keep).length
-    const uncategorized = rows.filter((r) => r.keep && !r.categoria_orcamento).length
-    return { total: rows.length, keepCount, uncategorized }
+    const pending = rows.filter((r) => r.status === 'pending').length
+    const uncategorizedExpense = rows.filter((r) => r.status === 'pending' && r.direction === 'expense' && !r.category).length
+    return { pending, uncategorizedExpense }
   }, [rows])
 
   async function updateRow(rowId, patch) {
     setSavingRow(rowId)
     setError('')
     try {
-      await api.curationUpdate({
-        file: selectedFile || undefined,
-        updates: [{ row_id: rowId, ...patch }],
-      })
-      setRows((current) => {
-        const updated = current.map((row) => (
-          row.row_id === rowId ? { ...row, ...patch } : row
-        ))
-        if (view === 'all') return updated
-        if (view === 'keep') return updated.filter((row) => row.keep)
-        return updated.filter((row) => row.keep && !row.categoria_orcamento)
-      })
+      await api.inboxUpdate({ updates: [{ id: rowId, ...patch }] })
+      setRows((current) => current.map((row) => (row.id === rowId ? { ...row, ...patch } : row)))
     } catch (err) {
       setError(err.message || 'Falha ao salvar alteração.')
     } finally {
@@ -129,41 +68,27 @@ export default function Curation() {
     }
   }
 
-  async function exportKeepOnly() {
-    setExportStatus('Gerando arquivo...')
-    setError('')
-    try {
-      const res = await api.curationExport(selectedFile || undefined)
-      setExportStatus(`Arquivo gerado: ${res.output_file} (${res.rows_exported} linhas)`)
-    } catch (err) {
-      setExportStatus('')
-      setError(err.message || 'Falha ao exportar CSV filtrado.')
-    }
-  }
-
-  async function importKeepAsExpenses() {
-    const uncategorized = rows.filter((row) => row.keep && !row.categoria_orcamento).length
+  async function importPendingExpenses() {
+    const uncategorized = rows.filter((r) => r.status === 'pending' && r.direction === 'expense' && !r.category).length
     const confirmMsg = uncategorized > 0
-      ? `Existem ${uncategorized} transação(ões) mantidas sem categoria. Elas serão ignoradas na importação. Continuar?`
-      : 'Importar transações mantidas como despesas?'
+      ? `Existem ${uncategorized} despesa(s) sem categoria. Elas serão ignoradas na importação. Continuar?`
+      : 'Importar despesas pendentes categorizadas para o razão final?'
     if (!window.confirm(confirmMsg)) return
 
     setImporting(true)
     setImportStatus('Importando despesas...')
     setError('')
     try {
-      const res = await api.curationImportExpenses({
-        file: selectedFile || undefined,
-        require_category: true,
-      })
+      const res = await api.inboxImportExpenses({ require_category: true })
       const months = Object.entries(res.imported_by_month || {})
         .map(([month, count]) => `${month}: ${count}`)
         .join(', ')
       setImportStatus(
         `Importadas ${res.imported_expenses} despesas. ` +
         (months ? `Meses: ${months}. ` : '') +
-        `Duplicadas ignoradas: ${res.skipped?.duplicates ?? 0}.`
+        `Ignoradas sem categoria: ${res.skipped?.missing_category ?? 0}.`
       )
+      await load()
     } catch (err) {
       setImportStatus('')
       setError(err.message || 'Falha ao importar despesas.')
@@ -172,218 +97,114 @@ export default function Curation() {
     }
   }
 
-  async function applyDateRangeDrop({ automatic = false } = {}) {
-    if (!dateFrom || !dateTo) {
-      if (automatic) return
-      setError('Selecione De e Até para aplicar o descarte fora da faixa.')
-      return
-    }
-    setApplyingRange(true)
-    setRangeStatus(automatic ? 'Aplicando faixa de datas automaticamente...' : 'Aplicando faixa de datas...')
-    setError('')
-    try {
-      let res
-      try {
-        res = await api.curationApplyDateRange({
-          file: selectedFile || undefined,
-          date_from: dateFrom,
-          date_to: dateTo,
-        })
-      } catch (err) {
-        if (!isNotFoundError(err)) throw err
-        const allRowsRes = await api.curationTransactions({
-          file: selectedFile || undefined,
-          view: 'all',
-          limit: 2000,
-        })
-        const allRows = allRowsRes.items || []
-        let droppedOutsideRange = 0
-        let invalidDateRows = 0
-        const updates = []
-
-        for (const row of allRows) {
-          const rowDate = String(row.date || '').trim()
-          const validDate = /^\d{4}-\d{2}-\d{2}$/.test(rowDate)
-          if (!validDate) invalidDateRows += 1
-          const inRange = validDate && rowDate >= dateFrom && rowDate <= dateTo
-          if (!inRange) {
-            droppedOutsideRange += 1
-            if (row.keep) updates.push({ row_id: row.row_id, keep: false })
-          }
-        }
-
-        for (let i = 0; i < updates.length; i += 400) {
-          await api.curationUpdate({
-            file: selectedFile || undefined,
-            updates: updates.slice(i, i + 400),
-          })
-        }
-        res = {
-          dropped_outside_range: droppedOutsideRange,
-          invalid_date_rows: invalidDateRows,
-          changed_rows: updates.length,
-        }
-      }
-      lastAutoRangeKey.current = `${selectedFile || meta.csv_file}|${dateFrom}|${dateTo}`
-      setRangeStatus(
-        `Fora da faixa marcadas para descarte: ${res.dropped_outside_range}. ` +
-        `Alteradas: ${res.changed_rows}.`
-      )
-      await load()
-    } catch (err) {
-      setRangeStatus('')
-      setError(err.message || 'Falha ao aplicar faixa de datas.')
-    } finally {
-      setApplyingRange(false)
-    }
-  }
-
-  useEffect(() => {
-    if (!dateFrom || !dateTo) return
-    const fileKey = selectedFile || meta.csv_file
-    if (!fileKey) return
-    const key = `${fileKey}|${dateFrom}|${dateTo}`
-    if (lastAutoRangeKey.current === key) return
-
-    const timer = window.setTimeout(() => {
-      applyDateRangeDrop({ automatic: true })
-    }, 250)
-    return () => window.clearTimeout(timer)
-  }, [dateFrom, dateTo, selectedFile, meta.csv_file])
-
   return (
     <div className="space-y-5 animate-fade-in">
-      <div className="flex flex-col gap-3">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-bold text-white">Curadoria de Transações</h1>
-            <p className="text-sm text-slate-400 mt-1">Categorize as transações mantidas e descarte extras no mesmo fluxo.</p>
-          </div>
-          <button type="button" className="btn-ghost px-3 py-2" onClick={load}>
-            <span className="inline-flex items-center gap-2"><RefreshCw size={15} />Atualizar</span>
-          </button>
-        </div>
-        <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/10 px-3 py-2 text-xs text-cyan-200">
-          Origem: <span className="font-semibold break-all">{meta.csv_file || '—'}</span>
-        </div>
+      <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between border-b border-[var(--border-color)] pb-6 mt-4">
         <div>
-          <label className="label block mb-1.5">Arquivo CSV</label>
-          <select
-            className="input-field"
-            value={selectedFile}
-            onChange={(event) => setSelectedFile(event.target.value)}
-          >
-            {(meta.available_csv_files || []).map((file) => (
-              <option key={file} value={file}>{file}</option>
-            ))}
-          </select>
-          <div className="mt-1 text-[11px] text-slate-400 break-all">{selectedFile || '—'}</div>
+          <h1 className="text-4xl text-white tracking-tight leading-none" style={{ fontFamily: '"DM Serif Text", serif' }}>Inbox de Transações</h1>
+          <p className="text-[11px] text-[var(--text-muted)] mt-3 font-mono uppercase tracking-widest">API ingestão → revisar/excluir/categorizar → importar despesas</p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <div>
-            <label className="label block mb-1.5">De</label>
-            <input
-              type="date"
-              className="input-field"
-              value={dateFrom}
-              onChange={(event) => setDateFrom(event.target.value)}
-            />
-          </div>
-          <div>
-            <label className="label block mb-1.5">Até</label>
-            <input
-              type="date"
-              className="input-field"
-              value={dateTo}
-              onChange={(event) => setDateTo(event.target.value)}
-            />
-          </div>
-        </div>
-        <button
-          type="button"
-          className="btn-ghost w-full sm:w-auto"
-          onClick={() => applyDateRangeDrop()}
-          disabled={applyingRange}
-        >
-          {applyingRange ? 'Aplicando...' : 'Descartar fora da faixa'}
+        <button type="button" className="btn-ghost" onClick={load}>
+          <span className="inline-flex items-center gap-2"><RefreshCw size={15} /> Atualizar</span>
         </button>
       </div>
 
       {error && (
-        <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+        <div className="status-error px-4 py-3 text-sm">
           <div>{error}</div>
-          <button type="button" onClick={load} className="btn-ghost mt-2 px-3 py-1.5 text-xs">
-            Tentar novamente
-          </button>
+          <button type="button" onClick={load} className="btn-ghost mt-2 px-3 py-1.5 text-xs">Tentar novamente</button>
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-        <div className="glass-card p-3">
-          <div className="label">Linhas</div>
-          <div className="text-lg font-bold text-white">{stats.total}</div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 border-b border-[var(--border-color)] pb-6">
+        <div className="panel p-5 border-t-2 border-t-[#333]">
+          <div className="label mb-1 uppercase tracking-widest text-[10px] font-mono">Total</div>
+          <div className="text-3xl text-white" style={{ fontFamily: '"DM Serif Text", serif' }}>{meta.stats.total}</div>
         </div>
-        <div className="glass-card p-3">
-          <div className="label">Mantidas</div>
-          <div className="text-lg font-bold text-emerald-300">{stats.keepCount}</div>
+        <div className="panel p-5 border-t-2 border-t-[var(--color-warn)]">
+          <div className="label mb-1 uppercase tracking-widest text-[10px] font-mono">Pendentes</div>
+          <div className="text-3xl text-[var(--color-warn)]" style={{ fontFamily: '"DM Serif Text", serif' }}>{meta.stats.pending}</div>
         </div>
-        <div className="glass-card p-3">
-          <div className="label">Sem categoria</div>
-          <div className="text-lg font-bold text-amber-300">{stats.uncategorized}</div>
+        <div className="panel p-5 border-t-2 border-t-[var(--color-expense)]">
+          <div className="label mb-1 uppercase tracking-widest text-[10px] font-mono">Excluídas</div>
+          <div className="text-3xl text-[var(--color-expense)]" style={{ fontFamily: '"DM Serif Text", serif' }}>{meta.stats.excluded}</div>
+        </div>
+        <div className="panel p-5 border-t-2 border-t-[var(--color-income)]">
+          <div className="label mb-1 uppercase tracking-widest text-[10px] font-mono">Importadas</div>
+          <div className="text-3xl text-[var(--color-income)]" style={{ fontFamily: '"DM Serif Text", serif' }}>{meta.stats.imported}</div>
         </div>
       </div>
 
-      <div className="glass-card p-3 flex flex-col sm:flex-row sm:items-center gap-2">
-        <div className="inline-flex w-full sm:w-auto rounded-xl border border-slate-700/70 bg-slate-900/60 p-1">
+      <div className="panel p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+        <div className="w-full sm:w-auto overflow-x-auto scrollbar-thin">
+          <div className="inline-flex min-w-max border border-[#333] p-1">
           {[
-            { key: 'uncategorized', label: 'Pendentes' },
-            { key: 'keep', label: 'Mantidas' },
+            { key: 'pending', label: 'Pendentes' },
+            { key: 'excluded', label: 'Excluídas' },
+            { key: 'imported', label: 'Importadas' },
             { key: 'all', label: 'Todas' },
           ].map((item) => (
             <button
               key={item.key}
               type="button"
               onClick={() => setView(item.key)}
-              className={`flex-1 sm:flex-none px-3 py-1.5 text-xs font-semibold rounded-lg transition ${view === item.key ? 'bg-blue-600/40 text-blue-100' : 'text-slate-400 hover:text-slate-200'}`}
+              className={`px-4 py-2 text-[11px] font-mono tracking-widest uppercase transition whitespace-nowrap ${view === item.key ? 'bg-white text-black font-bold' : 'text-[var(--text-secondary)] hover:text-white'}`}
             >
               {item.label}
             </button>
           ))}
+          </div>
         </div>
 
         <button
           type="button"
-          onClick={importKeepAsExpenses}
+          onClick={importPendingExpenses}
           disabled={importing}
-          className="btn-primary w-full sm:w-auto"
+          className="btn-primary w-full sm:w-auto sm:ml-auto"
         >
-          <span className="inline-flex items-center gap-2">{importing ? 'Importando...' : 'Importar despesas'}</span>
-        </button>
-
-        <button type="button" onClick={exportKeepOnly} className="btn-ghost w-full sm:w-auto sm:ml-auto">
-          <span className="inline-flex items-center gap-2"><Download size={14} />Exportar keep</span>
+          <span className="inline-flex items-center gap-2">
+            {importing ? 'Importando...' : <><Upload size={14} /> Importar despesas</>}
+          </span>
         </button>
       </div>
-      {stats.uncategorized > 0 && (
-        <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs text-amber-200">
-          {stats.uncategorized} transação(ões) mantidas sem categoria serão ignoradas na importação.
+
+      <div className="panel p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label className="label block mb-1.5">Ordenar por</label>
+          <select
+            className="input-field"
+            value={sortBy}
+            onChange={(event) => setSortBy(event.target.value)}
+          >
+            <option value="tx_date">Data da transação</option>
+            <option value="amount">Valor</option>
+            <option value="status">Status</option>
+            <option value="category">Categoria</option>
+            <option value="provider">Provedor</option>
+            <option value="created_at">Data de ingestão</option>
+          </select>
+        </div>
+        <div>
+          <label className="label block mb-1.5">Direção</label>
+          <select
+            className="input-field"
+            value={sortDir}
+            onChange={(event) => setSortDir(event.target.value)}
+          >
+            <option value="desc">Decrescente</option>
+            <option value="asc">Crescente</option>
+          </select>
+        </div>
+      </div>
+
+      {stats.uncategorizedExpense > 0 && (
+        <div className="status-warn px-4 py-3 text-xs">
+          {stats.uncategorizedExpense} despesa(s) pendente(s) sem categoria serão ignoradas na importação.
         </div>
       )}
 
-      {exportStatus && (
-        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-xs text-emerald-200">
-          {exportStatus}
-        </div>
-      )}
       {importStatus && (
-        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-xs text-emerald-200">
-          {importStatus}
-        </div>
-      )}
-      {rangeStatus && (
-        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-xs text-emerald-200">
-          {rangeStatus}
-        </div>
+        <div className="status-success px-4 py-3 text-xs">{importStatus}</div>
       )}
 
       <div className="space-y-3">
@@ -398,51 +219,70 @@ export default function Curation() {
         )}
 
         {!loading && rows.map((row) => {
-          const busy = savingRow === row.row_id
-          const primaryText = row.title || row.description || '(sem descrição)'
+          const busy = savingRow === row.id
+          const isExpense = row.direction === 'expense'
+          const canCategorize = isExpense && row.status !== 'imported'
 
           return (
-            <article key={row.row_id} className="glass-card p-4 space-y-3">
-              <div className="flex items-start justify-between gap-3">
+            <article key={row.id} className={`panel p-4 sm:p-6 flex flex-col gap-4 transition-all ${row.status === 'excluded' ? 'opacity-50 grayscale' : ''}`}>
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
                 <div className="min-w-0">
-                  <h3 className="font-semibold text-slate-100 leading-tight">{primaryText}</h3>
-                  <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-400">
-                    <span>{row.date || 'sem data'}</span>
-                    <span className={row.keep ? 'text-emerald-300' : 'text-rose-300'}>{row.keep ? 'Mantida' : 'Descartada'}</span>
-                    <span>{row.schema_type}</span>
+                  <h3 className="text-lg sm:text-xl text-white tracking-wide leading-tight truncate-2 break-words" style={{ fontFamily: '"DM Serif Text", serif' }}>{row.description || '(sem descrição)'}</h3>
+                  <div className="mt-2 flex flex-wrap gap-x-3 gap-y-2 text-[11px] font-mono tracking-widest uppercase text-[var(--text-muted)]">
+                    <span>{row.tx_date || 'sem data'}</span>
+                    <span className="border border-[#333] px-1.5 py-0.5">{row.provider}</span>
+                    <span className="border border-[#333] px-1.5 py-0.5">{row.direction}</span>
+                    <span className={row.status === 'pending' ? 'text-[var(--color-warn)]' : row.status === 'imported' ? 'text-[var(--color-income)]' : 'text-[var(--color-expense)]'}>{row.status}</span>
+                    {row.exclude_reason && <span className="text-[var(--color-expense)]">{row.exclude_reason}</span>}
                   </div>
                 </div>
-                <div className={`text-sm font-bold whitespace-nowrap ${Number(row.amount) < 0 ? 'text-rose-300' : 'text-emerald-300'}`}>
-                  {fmt(row.amount)}
+                <div className={`text-2xl whitespace-nowrap text-right ${isExpense ? 'text-[var(--color-expense)]' : 'text-[var(--color-income)]'}`} style={{ fontFamily: '"DM Serif Text", serif' }}>
+                  {isExpense ? '-' : '+'}{fmt(row.amount)}
                 </div>
               </div>
 
-              <KeepToggle
-                keep={row.keep}
-                busy={busy}
-                onKeep={() => updateRow(row.row_id, { keep: true })}
-                onDrop={() => updateRow(row.row_id, { keep: false })}
-              />
+              <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 items-center">
+                <div>
+                  <label className="label block mb-1.5">Categoria (despesa)</label>
+                  <select
+                    className="input-field"
+                    value={row.category || ''}
+                    disabled={!canCategorize || busy}
+                    onChange={(event) => updateRow(row.id, { category: event.target.value, status: row.status === 'excluded' ? 'pending' : row.status })}
+                  >
+                    <option value="">Sem categoria</option>
+                    {(meta.categories || []).map((cat) => <option key={cat} value={cat}>{cat}</option>)}
+                  </select>
+                </div>
 
-              <div>
-                <label className="label block mb-1.5">
-                  <span className="inline-flex items-center gap-1.5"><Tags size={12} />Categoria (Orçamento)</span>
-                </label>
-                <select
-                  className="input-field"
-                  value={row.categoria_orcamento || ''}
-                  disabled={busy || !row.keep}
-                  onChange={(event) => updateRow(row.row_id, { categoria_orcamento: event.target.value })}
-                >
-                  <option value="">Selecionar categoria</option>
-                  {meta.categories.map((category) => (
-                    <option key={category} value={category}>{category}</option>
-                  ))}
-                </select>
+                {row.status !== 'imported' && (
+                    <div className="inline-flex border border-[#333] p-1 justify-self-start sm:justify-self-end">
+                      <button
+                        type="button"
+                        onClick={() => updateRow(row.id, { status: 'pending', exclude_reason: '' })}
+                        disabled={busy}
+                        className={`px-3 py-2 text-[11px] font-mono uppercase tracking-widest transition ${row.status === 'pending' ? 'bg-[var(--color-income)] text-black font-bold' : 'text-[var(--text-secondary)] hover:text-white'}`}
+                      >
+                        <span className="inline-flex items-center gap-1.5"><Check size={12} /> Manter</span>
+                      </button>
+                    <button
+                      type="button"
+                      onClick={() => updateRow(row.id, { status: 'excluded', exclude_reason: row.exclude_reason || 'manual_exclusion' })}
+                      disabled={busy}
+                        className={`px-3 py-2 text-[11px] font-mono uppercase tracking-widest transition ${row.status === 'excluded' ? 'bg-[var(--color-expense)] text-black font-bold' : 'text-[var(--text-secondary)] hover:text-white'}`}
+                      >
+                      <span className="inline-flex items-center gap-1.5"><CircleSlash2 size={12} /> Excluir</span>
+                    </button>
+                  </div>
+                )}
               </div>
             </article>
           )
         })}
+      </div>
+
+      <div className="text-[11px] font-mono uppercase tracking-widest text-[var(--text-muted)] border-t border-[var(--border-color)] pt-4 inline-flex items-center gap-2">
+        <Inbox size={14} /> A Inbox recebe transações via API e substitui o fluxo de curadoria CSV.
       </div>
     </div>
   )
