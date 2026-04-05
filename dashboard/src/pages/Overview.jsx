@@ -279,15 +279,15 @@ export default function Overview({ offlineBanner: OfflineBanner }) {
                     </div>
                 </div>
 
-                <div className="xl:col-span-2 section-shell space-y-4">
-                    <div>
+                <div className="xl:col-span-2 section-shell flex flex-col">
+                    <div className="mb-2">
                         <div className="section-title mb-1">Gasto por categoria</div>
                         <div className="section-subtitle">{monthLabel}</div>
                     </div>
-                    <div className="h-64">
+                    <div className="flex-1 min-h-[200px]">
                         <SpendingDonut data={summary?.spending_by_category} />
                     </div>
-                    <div className="space-y-2 border-t border-[var(--border-color)] pt-4">
+                    <div className="space-y-2 border-t border-[var(--border-color)] pt-4 mt-2">
                         {topCategoryEntries.length === 0 && (
                             <div className="text-sm text-[var(--text-muted)]">Sem despesas categorizadas neste mês.</div>
                         )}
