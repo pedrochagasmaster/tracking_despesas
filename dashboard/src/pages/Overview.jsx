@@ -269,12 +269,12 @@ export default function Overview({ offlineBanner: OfflineBanner }) {
 
             {/* Charts row */}
             <div className="grid grid-cols-1 xl:grid-cols-5 gap-4">
-                <div className="xl:col-span-3 section-shell">
+                <div className="xl:col-span-3 section-shell flex flex-col">
                     <div className="mb-4">
                         <div className="section-title">Evolução mensal</div>
                         <div className="section-subtitle">Receita x despesas nos últimos 7 meses. O importante aqui é tendência, não decoração.</div>
                     </div>
-                    <div className="h-52">
+                    <div className="flex-1 min-h-[208px]">
                         <TrendChart data={trends} />
                     </div>
                 </div>
