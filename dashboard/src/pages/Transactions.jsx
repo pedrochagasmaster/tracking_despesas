@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { api } from '../api/client'
 import MonthPicker from '../components/MonthPicker'
-import { Search, Filter, RefreshCw, TrendingDown, TrendingUp, PenSquare, Trash2, X, AlertCircle, Plus } from 'lucide-react'
+import DataHealthBadge from '../components/DataHealthBadge'
+import StatePanel from '../components/StatePanel'
+import { Search, Filter, RefreshCw, TrendingDown, TrendingUp, PenSquare, Trash2, X, AlertCircle, Plus, Wallet } from 'lucide-react'
 import { currentMonthKey } from '../utils/date'
-
-const fmt = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v)
+import { currency, formatMonthLabel } from '../utils/format'
 
 const kindBadge = { one_off: 'badge-blue', subscription: 'badge-violet', installment: 'badge-yellow' }
 const kindLabel = { one_off: 'Avulso', subscription: 'Assinatura', installment: 'Parcelado' }
@@ -228,7 +229,7 @@ function ExpenseEditModal({ expense, onClose, onSave }) {
   )
 }
 
-export default function Transactions() {
+export default function Transactions({ offlineBanner: OfflineBanner }) {
   const [month, setMonth] = useState(currentMonthKey)
   const [search, setSearch] = useState('')
   const [catFilter, setCatFilter] = useState('all')
@@ -236,31 +237,40 @@ export default function Transactions() {
   const [expenses, setExpenses] = useState([])
   const [incomes, setIncomes] = useState([])
   const [categories, setCategories] = useState([])
+  const [meta, setMeta] = useState(null)
+  const [offlineInfo, setOfflineInfo] = useState([])
   const [loading, setLoading] = useState(true)
   const [actionError, setActionError] = useState('')
   const [editingExpense, setEditingExpense] = useState(null)
   const [busyExpenseId, setBusyExpenseId] = useState(null)
   const [busyInstallmentId, setBusyInstallmentId] = useState(null)
   const [showAddModal, setShowAddModal] = useState(false)
+  const [loadError, setLoadError] = useState('')
 
   const load = useCallback(async () => {
     if (!month) return
     setLoading(true)
+    setLoadError('')
     try {
-      const [e, i, c] = await Promise.all([api.expenses(month), api.incomes(month), api.categories()])
+      const [e, i, c, m] = await Promise.all([api.expenses(month), api.incomes(month), api.categories(), api.systemMeta()])
       setExpenses(e)
       setIncomes(i)
       setCategories(c)
+      setMeta(m)
+      setOfflineInfo([
+        e?.__offline ? { cachedAt: e.__offlineCachedAt, source: e.__offlineSource } : null,
+        i?.__offline ? { cachedAt: i.__offlineCachedAt, source: i.__offlineSource } : null,
+        c?.__offline ? { cachedAt: c.__offlineCachedAt, source: c.__offlineSource } : null,
+        m?.__offline ? { cachedAt: m.__offlineCachedAt, source: m.__offlineSource } : null,
+      ].filter(Boolean))
+    } catch (err) {
+      setLoadError(err.message || 'Falha ao carregar transações.')
     } finally {
       setLoading(false)
     }
   }, [month])
 
   useEffect(() => { load() }, [load])
-
-  function canEditExpense() {
-    return true
-  }
 
   async function onDeleteExpense(row) {
     const ok = window.confirm(`Excluir a despesa "${row.description}"?`)
@@ -314,21 +324,32 @@ export default function Transactions() {
   const displayRows = tab === 'expenses' ? filteredExpenses : filteredIncomes
   const totalExpenses = filteredExpenses.reduce((s, e) => s + e.amount, 0)
   const totalIncomes = filteredIncomes.reduce((s, i) => s + i.amount, 0)
+  const netFiltered = totalIncomes - totalExpenses
+  const monthLabel = formatMonthLabel(month)
+  const hasFilters = Boolean(search) || (tab === 'expenses' && catFilter !== 'all')
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between border-b border-[var(--border-color)] pb-6">
-        <div>
-          <h1 className="text-4xl text-white tracking-tight leading-none" style={{ fontFamily: '"DM Serif Text", serif' }}>Transações</h1>
-          <p className="text-[11px] text-[var(--text-muted)] mt-3 font-mono uppercase tracking-widest">Despesas e receitas do período</p>
+      <div className="flex flex-col gap-4 border-b border-[var(--border-color)] pb-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="text-4xl text-white tracking-tight leading-none" style={{ fontFamily: '"DM Serif Text", serif' }}>Transações</h1>
+            <p className="text-sm text-[var(--text-secondary)] mt-3">Lista operacional para entender o que entrou, o que saiu e corrigir rápido quando algo estiver errado.</p>
+          </div>
+          <div className="flex items-center gap-3">
+            {month && <MonthPicker value={month} onChange={setMonth} />}
+            <button onClick={() => setShowAddModal(true)} className="btn-primary flex items-center gap-2 whitespace-nowrap">
+              <Plus size={15} /> Lançamento
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          {month && <MonthPicker value={month} onChange={setMonth} />}
-          <button onClick={() => setShowAddModal(true)} className="btn-primary flex items-center gap-2 whitespace-nowrap">
-            <Plus size={15} /> Lançamento
-          </button>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="stat-chip">Competência: {monthLabel}</div>
+          {meta && <DataHealthBadge meta={meta} />}
         </div>
       </div>
+
+      {offlineInfo.length > 0 && OfflineBanner ? <OfflineBanner sources={offlineInfo} /> : null}
 
       {actionError && (
         <div className="status-error p-3 text-sm flex items-center gap-2">
@@ -337,14 +358,23 @@ export default function Transactions() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {loadError && (
+        <StatePanel
+          kind="error"
+          title="Falha ao carregar transações"
+          description={loadError}
+          action={<button onClick={load} className="btn-primary">Tentar novamente</button>}
+        />
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="panel p-6 flex items-center gap-5 border-l-2 border-l-[var(--color-expense)]">
           <div className="w-10 h-10 border border-[var(--border-color)] flex items-center justify-center">
             <TrendingDown size={16} className="text-[var(--color-expense)]" />
           </div>
           <div>
             <div className="label" style={{ fontFamily: '"Space Mono", monospace' }}>Total Despesas</div>
-            <div className="text-3xl text-white mt-1" style={{ fontFamily: '"DM Serif Text", serif' }}>{fmt(totalExpenses)}</div>
+            <div className="text-3xl text-white mt-1" style={{ fontFamily: '"DM Serif Text", serif' }}>{currency(totalExpenses)}</div>
           </div>
           <span className="ml-auto text-[10px] text-[var(--text-muted)] font-mono uppercase tracking-widest">{filteredExpenses.length} itens</span>
         </div>
@@ -354,9 +384,19 @@ export default function Transactions() {
           </div>
           <div>
             <div className="label" style={{ fontFamily: '"Space Mono", monospace' }}>Total Receitas</div>
-            <div className="text-3xl text-white mt-1" style={{ fontFamily: '"DM Serif Text", serif' }}>{fmt(totalIncomes)}</div>
+            <div className="text-3xl text-white mt-1" style={{ fontFamily: '"DM Serif Text", serif' }}>{currency(totalIncomes)}</div>
           </div>
           <span className="ml-auto text-[10px] text-[var(--text-muted)] font-mono uppercase tracking-widest">{filteredIncomes.length} itens</span>
+        </div>
+        <div className="panel p-6 flex items-center gap-5 border-l-2 border-l-[var(--color-info)]">
+          <div className="w-10 h-10 border border-[var(--border-color)] flex items-center justify-center">
+            <Wallet size={16} className="text-[var(--color-info)]" />
+          </div>
+          <div>
+            <div className="label" style={{ fontFamily: '"Space Mono", monospace' }}>Resultado filtrado</div>
+            <div className={`text-3xl mt-1 ${netFiltered >= 0 ? 'text-[var(--color-income)]' : 'text-[var(--color-expense)]'}`} style={{ fontFamily: '"DM Serif Text", serif' }}>{currency(netFiltered)}</div>
+          </div>
+          <span className="ml-auto text-[10px] text-[var(--text-muted)] font-mono uppercase tracking-widest">receitas - despesas</span>
         </div>
       </div>
 
@@ -392,10 +432,15 @@ export default function Transactions() {
             <RefreshCw size={20} className="inline animate-spin text-[var(--text-secondary)]" />
           </div>
         )}
-        {!loading && displayRows.length === 0 && (
-          <div className="table-cell text-center text-[var(--text-muted)] font-mono text-xs uppercase py-6">Nenhum resultado.</div>
+        {!loading && !loadError && displayRows.length === 0 && (
+          <StatePanel
+            kind={hasFilters ? 'filtered' : 'empty'}
+            title={hasFilters ? 'Nenhum resultado para este filtro' : 'Nenhuma transação neste período'}
+            description={hasFilters ? 'A busca/filtro atual não encontrou nada. Tente limpar os filtros.' : 'Não há lançamentos para a competência selecionada.'}
+            action={hasFilters ? <button onClick={() => { setSearch(''); setCatFilter('all') }} className="btn-ghost">Limpar filtros</button> : null}
+          />
         )}
-        {!loading && displayRows.map((row) => (
+        {!loading && !loadError && displayRows.map((row) => (
           <div key={row.id} className="interactive-card border border-[var(--border-color)] bg-[var(--bg-panel)] p-4 text-sm group hover:bg-[var(--bg-surface)]">
             <div className="min-w-0 mb-3">
               <div className="font-medium text-[#ccc] truncate group-hover:text-white">{row.description}</div>
@@ -409,7 +454,7 @@ export default function Transactions() {
             </div>
             <div className="flex items-center justify-between pt-3 border-t border-[var(--border-color)]">
               <div className={`font-mono text-lg ${tab === 'expenses' ? 'text-[var(--color-expense)]' : 'text-[var(--color-income)]'}`}>
-                {tab === 'expenses' ? '-' : '+'}{fmt(row.amount)}
+                {tab === 'expenses' ? '-' : '+'}{currency(row.amount)}
               </div>
               {tab === 'expenses' && (
                 <div className="flex items-center gap-2">
@@ -469,10 +514,10 @@ export default function Transactions() {
                   <RefreshCw size={20} className="inline animate-spin text-[var(--text-secondary)]" />
                 </td></tr>
               )}
-              {!loading && displayRows.length === 0 && (
-                <tr><td colSpan={7} className="table-cell text-center text-[var(--text-muted)] font-mono text-xs uppercase py-10">Nenhum resultado.</td></tr>
+              {!loading && !loadError && displayRows.length === 0 && (
+                <tr><td colSpan={7} className="table-cell text-center text-[var(--text-muted)] py-10">{hasFilters ? 'Nenhum resultado para o filtro atual.' : 'Nenhuma transação encontrada para esta competência.'}</td></tr>
               )}
-              {!loading && displayRows.map((row) => (
+              {!loading && !loadError && displayRows.map((row) => (
                 <tr key={row.id} className="hover:bg-[var(--bg-surface)] transition-colors group">
                   <td className="table-cell text-[var(--text-muted)] font-mono text-[11px] group-hover:text-[var(--text-secondary)] whitespace-nowrap">{row.expense_date || row.income_date}</td>
                   <td className="table-cell text-[#ccc] group-hover:text-white max-w-xs truncate">{row.description}</td>
@@ -480,7 +525,7 @@ export default function Transactions() {
                   {tab === 'expenses' && <td className="table-cell hidden md:table-cell"><span className={kindBadge[row.kind] ?? 'badge-blue'}>{kindLabel[row.kind] ?? row.kind}</span></td>}
                   {tab === 'expenses' && <td className="table-cell hidden lg:table-cell text-[var(--text-muted)] text-[11px] font-mono">{row.installment_number ? `${row.installment_number}/${row.installment_total}` : '—'}</td>}
                   <td className={`table-cell text-right font-mono text-sm group-hover:opacity-80 ${tab === 'expenses' ? 'text-[var(--color-expense)]' : 'text-[var(--color-income)]'}`}>
-                    {tab === 'expenses' ? '-' : '+'}{fmt(row.amount)}
+                    {tab === 'expenses' ? '-' : '+'}{currency(row.amount)}
                   </td>
                   {tab === 'expenses' && (
                     <td className="table-cell text-right">

@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { api } from '../api/client'
 import MonthPicker from '../components/MonthPicker'
-import { RefreshCw, Plus, X, Target, PenSquare, Trash2, AlertCircle } from 'lucide-react'
+import DataHealthBadge from '../components/DataHealthBadge'
+import StatePanel from '../components/StatePanel'
+import { RefreshCw, Plus, X, PenSquare, Trash2, AlertCircle } from 'lucide-react'
 import { currentMonthKey } from '../utils/date'
-
-const fmt = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v)
+import { currency, formatMonthLabel } from '../utils/format'
 
 function BudgetRow({ item, onEdit, onDelete, busy }) {
   const over = item.remaining < 0
@@ -21,7 +22,7 @@ function BudgetRow({ item, onEdit, onDelete, busy }) {
           <span className="font-semibold text-white tracking-wide">{item.category}</span>
         </div>
         <div className="flex flex-wrap items-center gap-4 text-sm">
-          <span className="font-mono text-xs text-[var(--text-secondary)]">{fmt(item.spent)} / <span className="text-[#ccc]">{fmt(item.budgeted)}</span></span>
+          <span className="font-mono text-xs text-[var(--text-secondary)]">{currency(item.spent)} / <span className="text-[#ccc]">{currency(item.budgeted)}</span></span>
           <span className={`font-mono text-sm font-bold ${textColor}`}>{pct.toFixed(0)}%</span>
           {over && <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--color-expense)] border border-[var(--color-expense)] px-1.5 py-0.5">ACIMA</span>}
           <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity ml-2">
@@ -41,7 +42,7 @@ function BudgetRow({ item, onEdit, onDelete, busy }) {
         />
       </div>
       <div className="flex justify-between mt-3 text-[10px] font-mono uppercase tracking-widest text-[var(--text-muted)]">
-        <span>{over ? 'Excedeu em' : 'Restante'}: {fmt(Math.abs(item.remaining))}</span>
+        <span>{over ? 'Excedeu em' : 'Restante'}: {currency(Math.abs(item.remaining))}</span>
       </div>
     </div>
   )
@@ -104,19 +105,28 @@ function BudgetModal({ initial, onClose, onSave }) {
   )
 }
 
-export default function Budgets() {
+export default function Budgets({ offlineBanner: OfflineBanner }) {
   const [month, setMonth] = useState(currentMonthKey)
   const [budgets, setBudgets] = useState([])
+  const [meta, setMeta] = useState(null)
+  const [offlineInfo, setOfflineInfo] = useState(null)
   const [loading, setLoading] = useState(true)
   const [modalState, setModalState] = useState({ open: false, initial: null })
   const [busyCategory, setBusyCategory] = useState(null)
   const [actionError, setActionError] = useState('')
+  const [loadError, setLoadError] = useState('')
 
   const load = useCallback(async () => {
     if (!month) return
     setLoading(true)
+    setLoadError('')
     try {
-      setBudgets(await api.budgets(month))
+      const response = await api.budgets(month)
+      setBudgets(response.items || [])
+      setMeta(response.meta || null)
+      setOfflineInfo(response.__offline ? { cachedAt: response.__offlineCachedAt, source: response.__offlineSource } : null)
+    } catch (err) {
+      setLoadError(err.message || 'Falha ao carregar orçamentos.')
     } finally {
       setLoading(false)
     }
@@ -143,21 +153,31 @@ export default function Budgets() {
   const totalBudget = budgets.reduce((s, b) => s + b.budgeted, 0)
   const totalSpent = budgets.reduce((s, b) => s + b.spent, 0)
   const overBudget = budgets.filter((b) => b.remaining < 0).length
+  const monthLabel = formatMonthLabel(month)
+  const offlineSources = offlineInfo ? [offlineInfo] : []
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between border-b border-[var(--border-color)] pb-6 mt-4">
-        <div>
-          <h1 className="text-4xl text-white tracking-tight leading-none" style={{ fontFamily: '"DM Serif Text", serif' }}>Orçamentos</h1>
-          <p className="text-[11px] text-[var(--text-muted)] mt-3 font-mono uppercase tracking-widest">Metas de gasto por categoria</p>
+      <div className="flex flex-col gap-4 border-b border-[var(--border-color)] pb-6 mt-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="text-4xl text-white tracking-tight leading-none" style={{ fontFamily: '"DM Serif Text", serif' }}>Orçamentos</h1>
+            <p className="text-sm text-[var(--text-secondary)] mt-3">Ver o que está sob controle, o que está perto do limite e o que já passou dele.</p>
+          </div>
+          <div className="w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+            {month && <MonthPicker value={month} onChange={setMonth} className="w-full sm:w-auto justify-center sm:justify-start" />}
+            <button onClick={() => setModalState({ open: true, initial: null })} className="btn-primary flex items-center justify-center gap-2 whitespace-nowrap w-full sm:w-auto">
+              <Plus size={15} /> Orçamento
+            </button>
+          </div>
         </div>
-        <div className="w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-          {month && <MonthPicker value={month} onChange={setMonth} className="w-full sm:w-auto justify-center sm:justify-start" />}
-          <button onClick={() => setModalState({ open: true, initial: null })} className="btn-primary flex items-center justify-center gap-2 whitespace-nowrap w-full sm:w-auto">
-            <Plus size={15} /> Orçamento
-          </button>
+        <div className="flex flex-wrap items-center gap-2 justify-between">
+          <div className="stat-chip">Competência: {monthLabel}</div>
+          {meta && <DataHealthBadge meta={meta} />}
         </div>
       </div>
+
+      {offlineSources.length > 0 && OfflineBanner ? <OfflineBanner sources={offlineSources} /> : null}
 
       {actionError && (
         <div className="glass-card p-3 border border-red-500/30 text-red-300 text-sm flex items-center gap-2">
@@ -168,16 +188,17 @@ export default function Budgets() {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-b border-[var(--border-color)] pb-6">
         <div className="panel p-6 border-t-2 border-t-[#333]">
-          <div className="label mb-2" style={{ fontFamily: '"Space Mono", monospace' }}>Total Orçado</div>
-          <div className="text-3xl text-white" style={{ fontFamily: '"DM Serif Text", serif' }}>{fmt(totalBudget)}</div>
+          <div className="label mb-2" style={{ fontFamily: '"Space Mono", monospace' }}>Total orçado</div>
+          <div className="text-3xl text-white" style={{ fontFamily: '"DM Serif Text", serif' }}>{currency(totalBudget)}</div>
         </div>
         <div className="panel p-6 border-t-2 border-t-[var(--color-info)]">
-          <div className="label mb-2" style={{ fontFamily: '"Space Mono", monospace' }}>Total Gasto</div>
-          <div className="text-3xl text-[var(--color-info)]" style={{ fontFamily: '"DM Serif Text", serif' }}>{fmt(totalSpent)}</div>
+          <div className="label mb-2" style={{ fontFamily: '"Space Mono", monospace' }}>Total gasto</div>
+          <div className="text-3xl text-[var(--color-info)]" style={{ fontFamily: '"DM Serif Text", serif' }}>{currency(totalSpent)}</div>
         </div>
         <div className="panel p-6 border-t-2 border-t-[var(--color-warn)]">
-          <div className="label mb-2" style={{ fontFamily: '"Space Mono", monospace' }}>Categorias Acima</div>
+          <div className="label mb-2" style={{ fontFamily: '"Space Mono", monospace' }}>Categorias acima</div>
           <div className={`text-3xl ${overBudget > 0 ? 'text-[var(--color-expense)]' : 'text-[var(--color-income)]'}`} style={{ fontFamily: '"DM Serif Text", serif' }}>{overBudget}</div>
+          <div className="text-xs text-[var(--text-muted)] mt-2">Urgências aparecem aqui antes de virar surpresa ruim no fim do mês.</div>
         </div>
       </div>
 
@@ -185,12 +206,22 @@ export default function Budgets() {
         <div className="flex items-center justify-center h-40"><RefreshCw size={24} className="text-violet-500 animate-spin" /></div>
       )}
 
-      {!loading && budgets.length === 0 && (
-        <div className="panel p-16 text-center">
-          <Target size={32} className="mx-auto text-[#333] mb-4" />
-          <div className="text-[var(--text-muted)] font-mono text-xs uppercase tracking-widest">Nenhum orçamento definido</div>
-          <button onClick={() => setModalState({ open: true, initial: null })} className="btn-primary mt-6">Definir orçamento</button>
-        </div>
+      {!loading && loadError && (
+        <StatePanel
+          kind="error"
+          title="Falha ao carregar orçamentos"
+          description={loadError}
+          action={<button onClick={load} className="btn-primary">Tentar novamente</button>}
+        />
+      )}
+
+      {!loading && !loadError && budgets.length === 0 && (
+        <StatePanel
+          kind="empty"
+          title="Nenhum orçamento definido"
+          description="Sem orçamento, o painel não consegue dizer com clareza onde você está dentro ou fora do limite. Vale cadastrar pelo menos as categorias principais."
+          action={<button onClick={() => setModalState({ open: true, initial: null })} className="btn-primary">Definir orçamento</button>}
+        />
       )}
 
       {!loading && budgets.length > 0 && (

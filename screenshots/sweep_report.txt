@@ -1,0 +1,10 @@
+[mobile]
+console_errors=0
+request_failures=0
+response_errors=0
+
+[desktop]
+console_errors=0
+request_failures=0
+response_errors=0
+

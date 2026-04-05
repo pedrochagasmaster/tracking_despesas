@@ -1,41 +1,74 @@
+import { attachOfflineMeta, readCachedResponse, writeCachedResponse } from '../utils/offline-cache'
+
 const BASE = import.meta.env.VITE_API_BASE_URL
-    || `${window.location.protocol}//${window.location.hostname}:8000`
+    || (window.location.protocol === 'https:' ? '' : `${window.location.protocol}//${window.location.hostname}:8000`)
+
+const CACHEABLE_GET_PATHS = [
+    '/api/system/meta',
+    '/api/summary',
+    '/api/trends',
+    '/api/expenses',
+    '/api/incomes',
+    '/api/budgets',
+    '/api/categories',
+    '/api/default-month',
+    '/api/subscriptions',
+]
+
+function isCacheableGet(path, opts) {
+    const method = (opts.method || 'GET').toUpperCase()
+    return method === 'GET' && CACHEABLE_GET_PATHS.some((prefix) => path.startsWith(prefix))
+}
 
 async function req(path, opts = {}) {
-    const res = await fetch(`${BASE}${path}`, {
-        headers: { 'Content-Type': 'application/json' },
-        ...opts,
-    })
-    if (!res.ok) {
-        let message = res.statusText || 'Request failed'
-        const contentType = res.headers.get('content-type') || ''
-        if (contentType.includes('application/json')) {
-            const data = await res.json().catch(() => null)
-            if (typeof data?.detail === 'string') {
-                message = data.detail
-            } else if (Array.isArray(data?.detail)) {
-                const first = data.detail[0]
-                if (first?.msg) {
-                    const loc = Array.isArray(first.loc) ? first.loc.join('.') : ''
-                    message = loc ? `${loc}: ${first.msg}` : first.msg
-                } else {
+    const cacheable = isCacheableGet(path, opts)
+    try {
+        const res = await fetch(`${BASE}${path}`, {
+            headers: { 'Content-Type': 'application/json' },
+            ...opts,
+        })
+        if (!res.ok) {
+            let message = res.statusText || 'Request failed'
+            const contentType = res.headers.get('content-type') || ''
+            if (contentType.includes('application/json')) {
+                const data = await res.json().catch(() => null)
+                if (typeof data?.detail === 'string') {
+                    message = data.detail
+                } else if (Array.isArray(data?.detail)) {
+                    const first = data.detail[0]
+                    if (first?.msg) {
+                        const loc = Array.isArray(first.loc) ? first.loc.join('.') : ''
+                        message = loc ? `${loc}: ${first.msg}` : first.msg
+                    } else {
+                        message = JSON.stringify(data.detail)
+                    }
+                } else if (data?.detail != null) {
                     message = JSON.stringify(data.detail)
                 }
-            } else if (data?.detail != null) {
-                message = JSON.stringify(data.detail)
+                else if (data?.message) message = data.message
+            } else {
+                const text = await res.text()
+                if (text) message = text
             }
-            else if (data?.message) message = data.message
-        } else {
-            const text = await res.text()
-            if (text) message = text
+            throw new Error(message)
         }
-        throw new Error(message)
+        const data = await res.json()
+        if (cacheable) writeCachedResponse(path, data)
+        return data
+    } catch (error) {
+        if (cacheable) {
+            const cached = readCachedResponse(path)
+            if (cached?.data != null) {
+                return attachOfflineMeta(cached.data, path, cached.cachedAt)
+            }
+        }
+        throw error
     }
-    return res.json()
 }
 
 export const api = {
     defaultMonth: () => req('/api/default-month'),
+    systemMeta: () => req('/api/system/meta'),
     summary: (month) => req(`/api/summary${month ? `?month=${month}` : ''}`),
     expenses: (month) => req(`/api/expenses${month ? `?month=${month}` : ''}`),
     incomes: (month) => req(`/api/incomes${month ? `?month=${month}` : ''}`),
@@ -70,7 +103,8 @@ export const api = {
         return req(`/api/inbox/transactions?${params.toString()}`)
     },
     inboxUpdate: (body) => req('/api/inbox/transactions', { method: 'POST', body: JSON.stringify(body) }),
-    inboxImportExpenses: (body = {}) => req('/api/inbox/import-expenses', { method: 'POST', body: JSON.stringify(body) }),
+    inboxImport: (body = {}) => req('/api/inbox/import', { method: 'POST', body: JSON.stringify(body) }),
+    inboxImportExpenses: (body = {}) => req('/api/inbox/import', { method: 'POST', body: JSON.stringify(body) }),
 
     curationMeta: (file) => req(`/api/curation/meta${file ? `?file=${encodeURIComponent(file)}` : ''}`),
     curationTransactions: ({ file, view = 'keep', limit = 250, dateFrom, dateTo } = {}) => {

@@ -1,0 +1,10 @@
+account=ball.hard.af@gmail.com
+query=from:(@nubank.com.br) has:attachment filename:csv
+messages_found=63
+messages_scanned=63
+attachments_downloaded=6
+failures=0
+since=24h
+since_epoch=1771775425
+messages_skipped_cutoff=57
+outdir=./nubank_csv_attachments_last24h

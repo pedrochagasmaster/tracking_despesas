@@ -16,6 +16,10 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 LOG_DIR = ROOT / "logs"
+PORTLESS_PROXY_PORT = 1355
+PORTLESS_SCHEME = "http"
+PORTLESS_DASHBOARD_HOST = "tracking.localhost"
+PORTLESS_API_HOST = "api.tracking.localhost"
 
 
 def now_iso() -> str:
@@ -119,6 +123,17 @@ def build_urls(port: int, ip: str) -> dict[str, str]:
     }
 
 
+def build_portless_urls() -> dict[str, str]:
+    base_dashboard = f"{PORTLESS_SCHEME}://{PORTLESS_DASHBOARD_HOST}:{PORTLESS_PROXY_PORT}"
+    base_api = f"{PORTLESS_SCHEME}://{PORTLESS_API_HOST}:{PORTLESS_PROXY_PORT}"
+    return {
+        "dashboard": base_dashboard,
+        "api": base_api,
+        "docs": f"{base_api}/docs",
+        "health_hint": f"{base_api}/api/default-month",
+    }
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
@@ -139,6 +154,8 @@ def main() -> int:
     args = parse_args()
     ip = local_ip()
     services: dict[str, Any] = {}
+    portless_urls = build_portless_urls()
+    portless_running = is_port_open(PORTLESS_PROXY_PORT)
 
     if not args.no_api:
         api_cmd = f"uv run python -m uvicorn api:app --host 0.0.0.0 --port {args.api_port}"
@@ -177,11 +194,22 @@ def main() -> int:
             "local_ip": ip,
         },
         "services": services,
+        "friendly_urls": {
+            "enabled": portless_running,
+            "dashboard": None if args.no_ui else portless_urls["dashboard"],
+            "api": None if args.no_api else portless_urls["api"],
+            "docs": None if args.no_api else portless_urls["docs"],
+            "health_hint": None if args.no_api else portless_urls["health_hint"],
+        },
         "agent_connection": {
             "dashboard_url_local": None if args.no_ui else f"http://127.0.0.1:{args.ui_port}",
             "dashboard_url_lan": None if args.no_ui else f"http://{ip}:{args.ui_port}",
+            "dashboard_url_friendly": None if args.no_ui else portless_urls["dashboard"],
+            "dashboard_url_preferred": None if args.no_ui else (portless_urls["dashboard"] if portless_running else f"http://127.0.0.1:{args.ui_port}"),
             "api_base_url_local": None if args.no_api else f"http://127.0.0.1:{args.api_port}",
             "api_base_url_lan": None if args.no_api else f"http://{ip}:{args.api_port}",
+            "api_base_url_friendly": None if args.no_api else portless_urls["api"],
+            "api_base_url_preferred": None if args.no_api else (portless_urls["api"] if portless_running else f"http://127.0.0.1:{args.api_port}"),
         },
     }
 

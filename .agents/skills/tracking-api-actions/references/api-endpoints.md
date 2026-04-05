@@ -71,6 +71,14 @@ For agents running outside the project directory, use absolute path:
     - `frequency` (`monthly` | `yearly`)
     - `start_date` (optional, YYYY-MM-DD)
 
+- `POST /api/installments`
+  - Body:
+    - `start_date` (YYYY-MM-DD)
+    - `total_amount` (number, > 0)
+    - `installments` (integer, 2..120)
+    - `category` (string)
+    - `description` (string)
+
 - `POST /api/budgets`
   - Body:
     - `category` (string)
@@ -82,10 +90,15 @@ For agents running outside the project directory, use absolute path:
     - `amount` (number)
     - `category` (string)
     - `description` (string)
-  - Note: only `kind=one_off` can be edited.
+  - Note: only `kind=one_off` and `kind=installment` can be edited.
 
 - `DELETE /api/expenses/{id}`
-  - Note: only `kind=one_off` can be deleted.
+  - Note: only `kind=one_off` and `kind=installment` can be deleted.
+
+- `DELETE /api/installments/{id}`
+  - Deletes a full parcelado plan:
+    - removes all linked `expenses` rows with matching `installment_id`
+    - removes the parent row in `installments`
 
 - `PUT /api/budgets`
   - Body:
@@ -105,9 +118,11 @@ python scripts/api_action.py default-month
 python scripts/api_action.py summary --month 2026-02
 python scripts/api_action.py expenses --month 2026-02 --limit 50
 python scripts/api_action.py add-expense --expense-date 2026-02-10 --amount 89.90 --category Alimentação --description "Supermercado"
+python scripts/api_action.py add-installment --start-date 2026-02-15 --total-amount 2400 --installments 12 --category Eletronicos --description "Notebook"
 python scripts/api_action.py set-budget --category Moradia --amount 5500
 python scripts/api_action.py update-expense --id 12 --expense-date 2026-02-10 --amount 99.90 --category Alimentação --description "Supermercado (ajuste)"
 python scripts/api_action.py delete-expense --id 12
+python scripts/api_action.py delete-installment --id 3
 python scripts/api_action.py update-budget --category Moradia --amount 5800
 python scripts/api_action.py delete-budget --category Moradia
 ```

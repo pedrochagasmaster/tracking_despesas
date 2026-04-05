@@ -1,16 +1,30 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, createElement } from 'react'
 import { api } from '../api/client'
 import KpiCard from '../components/KpiCard'
 import MonthPicker from '../components/MonthPicker'
 import SpendingDonut from '../components/SpendingDonut'
 import TrendChart from '../components/TrendChart'
-import { DollarSign, TrendingDown, Banknote, Percent, Plus, X, RefreshCw } from 'lucide-react'
+import DataHealthBadge from '../components/DataHealthBadge'
+import StatePanel from '../components/StatePanel'
+import { DollarSign, TrendingDown, Banknote, Percent, Plus, X, RefreshCw, AlertTriangle, ArrowRightLeft, WalletCards } from 'lucide-react'
 import { currentMonthKey } from '../utils/date'
-
-const fmt = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v)
+import { currency, formatMonthLabel, pctDelta } from '../utils/format'
 
 const kindBadge = { one_off: 'badge-blue', subscription: 'badge-violet', installment: 'badge-yellow' }
 const kindLabel = { one_off: 'Avulso', subscription: 'Assinatura', installment: 'Parcelado' }
+
+function AlertStrip({ icon, title, text, tone = 'info' }) {
+    const toneClass = tone === 'warn' ? 'status-warn' : tone === 'error' ? 'status-error' : 'status-info'
+    return (
+        <div className={`p-4 flex items-start gap-3 ${toneClass}`}>
+            {icon ? createElement(icon, { size: 16, className: 'mt-0.5 shrink-0' }) : null}
+            <div>
+                <div className="text-xs font-mono uppercase tracking-wider mb-1">{title}</div>
+                <div className="text-sm text-[var(--text-primary)]">{text}</div>
+            </div>
+        </div>
+    )
+}
 
 function AddModal({ onClose, onSave }) {
     const [tab, setTab] = useState('expense')
@@ -125,17 +139,19 @@ function AddModal({ onClose, onSave }) {
     )
 }
 
-export default function Overview() {
+export default function Overview({ offlineBanner: OfflineBanner }) {
     const [month, setMonth] = useState(currentMonthKey)
     const [summary, setSummary] = useState(null)
     const [trends, setTrends] = useState([])
     const [expenses, setExpenses] = useState([])
     const [loading, setLoading] = useState(true)
     const [showModal, setShowModal] = useState(false)
+    const [loadError, setLoadError] = useState('')
 
     const load = useCallback(async () => {
         if (!month) return
         setLoading(true)
+        setLoadError('')
         try {
             const [s, t, e] = await Promise.all([
                 api.summary(month),
@@ -147,6 +163,7 @@ export default function Overview() {
             setExpenses(e.slice(0, 8))
         } catch (err) {
             console.error(err)
+            setLoadError(err.message || 'Falha ao carregar a visão geral.')
         } finally {
             setLoading(false)
         }
@@ -154,21 +171,51 @@ export default function Overview() {
 
     useEffect(() => { load() }, [load])
 
+    const monthLabel = formatMonthLabel(month)
+    const expenseDelta = pctDelta(summary?.expenses ?? 0, summary?.prev_expenses ?? 0)
+    const topCategoryEntries = Object.entries(summary?.spending_by_category || {}).slice(0, 4)
+    const totalCategorySpend = topCategoryEntries.reduce((acc, [, value]) => acc + value, 0)
+    const offlineSources = [summary, trends, expenses]
+      .filter((item) => item?.__offline || item?.__offlineCachedAt)
+      .map((item) => ({ cachedAt: item.__offlineCachedAt, source: item.__offlineSource }))
+
     return (
         <div className="space-y-6 animate-fade-in">
             {/* Header */}
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between border-b border-[var(--border-color)] pb-6">
-                <div>
-                    <h1 className="text-4xl text-white tracking-tight leading-none" style={{ fontFamily: '"DM Serif Text", serif' }}>Visão Geral</h1>
-                    <p className="text-[11px] text-[var(--text-muted)] mt-3 font-mono uppercase tracking-widest">Painel Financeiro Pessoal</p>
+            <div className="flex flex-col gap-4 border-b border-[var(--border-color)] pb-6">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                        <h1 className="text-4xl text-white tracking-tight leading-none" style={{ fontFamily: '"DM Serif Text", serif' }}>Visão Geral</h1>
+                        <p className="text-sm text-[var(--text-secondary)] mt-3">Estado atual, comparação com o mês anterior e o que merece atenção agora.</p>
+                    </div>
+                    <div className="w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+                        {month && <MonthPicker value={month} onChange={setMonth} className="w-full sm:w-auto justify-center sm:justify-start" />}
+                        <button onClick={() => setShowModal(true)} className="btn-primary flex items-center justify-center gap-2 whitespace-nowrap w-full sm:w-auto">
+                            <Plus size={15} /> Lançamento
+                        </button>
+                    </div>
                 </div>
-                <div className="w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-                    {month && <MonthPicker value={month} onChange={setMonth} className="w-full sm:w-auto justify-center sm:justify-start" />}
-                    <button onClick={() => setShowModal(true)} className="btn-primary flex items-center justify-center gap-2 whitespace-nowrap w-full sm:w-auto">
-                        <Plus size={15} /> Lançamento
-                    </button>
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <div className="stat-chip">Competência: {monthLabel}</div>
+                        {summary?.meta && <DataHealthBadge meta={summary.meta} />}
+                    </div>
+                    <div className="text-xs text-[var(--text-muted)] font-mono uppercase tracking-wider">
+                        Prioridade: confiança nos números → contexto → ação
+                    </div>
                 </div>
             </div>
+
+            {offlineSources.length > 0 && OfflineBanner ? <OfflineBanner sources={offlineSources} /> : null}
+
+            {loadError && (
+                <StatePanel
+                    kind="error"
+                    title="Falha ao carregar a visão geral"
+                    description={loadError}
+                    action={<button onClick={load} className="btn-primary">Tentar novamente</button>}
+                />
+            )}
 
             {/* KPIs */}
             {summary && (
@@ -178,15 +225,43 @@ export default function Overview() {
                         <div className="stat-chip">{month}</div>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-                        <KpiCard label="Receita" value={summary.income} prev={summary.prev_income} icon={Banknote} color="emerald" />
-                        <KpiCard label="Despesas" value={summary.expenses} prev={summary.prev_expenses} icon={TrendingDown} color="violet" invertDelta />
-                        <KpiCard label="Saldo Líquido" value={summary.net} icon={DollarSign} color={summary.net >= 0 ? 'emerald' : 'red'} />
-                        <KpiCard label="Taxa de Poupança" value={`${summary.savings_rate.toFixed(1)}%`} icon={Percent} color="blue" />
+                        <KpiCard label="Receita recebida" value={summary.income} prev={summary.prev_income} icon={Banknote} color="emerald" />
+                        <KpiCard label="Despesas do mês" value={summary.expenses} prev={summary.prev_expenses} icon={TrendingDown} color="violet" invertDelta />
+                        <KpiCard label="Resultado do mês" value={summary.net} prev={summary.prev_net} icon={DollarSign} color={summary.net >= 0 ? 'emerald' : 'red'} />
+                        <KpiCard label="Taxa de poupança" value={`${summary.savings_rate.toFixed(1)}%`} icon={Percent} color="blue" />
                     </div>
                 </div>
             )}
 
-            {loading && !summary && (
+            {summary && (
+                <div className="grid grid-cols-1 xl:grid-cols-3 gap-3">
+                    <AlertStrip
+                        icon={ArrowRightLeft}
+                        title="Comparação"
+                        tone={expenseDelta != null && expenseDelta > 10 ? 'warn' : 'info'}
+                        text={expenseDelta == null
+                            ? 'Ainda não há base suficiente para comparar as despesas com o mês anterior.'
+                            : `Despesas ${expenseDelta > 0 ? 'subiram' : 'caíram'} ${Math.abs(expenseDelta).toFixed(1)}% vs mês anterior.`}
+                    />
+                    <AlertStrip
+                        icon={WalletCards}
+                        title="Categoria que mais pesa"
+                        text={summary.top_category
+                            ? `${summary.top_category} lidera os gastos deste mês.`
+                            : 'Ainda não há despesas categorizadas neste mês.'}
+                    />
+                    <AlertStrip
+                        icon={AlertTriangle}
+                        title={summary.meta?.is_stale ? 'Atenção com a atualização' : 'Confiabilidade'}
+                        tone={summary.meta?.is_stale ? 'warn' : 'info'}
+                        text={summary.meta?.is_stale
+                            ? 'Os dados parecem desatualizados. Vale revisar a sincronização antes de tomar decisão.'
+                            : 'Base recente. Dá para usar esta visão como referência operacional.'}
+                    />
+                </div>
+            )}
+
+            {loading && !summary && !loadError && (
                 <div className="flex items-center justify-center h-40">
                     <RefreshCw size={24} className="text-violet-500 animate-spin" />
                 </div>
@@ -194,23 +269,40 @@ export default function Overview() {
 
             {/* Charts row */}
             <div className="grid grid-cols-1 xl:grid-cols-5 gap-4">
-                {/* Trend chart */}
                 <div className="xl:col-span-3 section-shell">
                     <div className="mb-4">
-                        <div className="section-title">Evolução Mensal</div>
-                        <div className="section-subtitle">Receita x Despesas nos últimos 7 meses</div>
+                        <div className="section-title">Evolução mensal</div>
+                        <div className="section-subtitle">Receita x despesas nos últimos 7 meses. O importante aqui é tendência, não decoração.</div>
                     </div>
                     <div className="h-52">
                         <TrendChart data={trends} />
                     </div>
                 </div>
 
-                {/* Donut */}
-                <div className="xl:col-span-2 section-shell">
-                    <div className="section-title mb-1">Gasto por Categoria</div>
-                    <div className="section-subtitle mb-4">{month}</div>
-                    <div className="h-52">
+                <div className="xl:col-span-2 section-shell space-y-4">
+                    <div>
+                        <div className="section-title mb-1">Gasto por categoria</div>
+                        <div className="section-subtitle">{monthLabel}</div>
+                    </div>
+                    <div className="h-44">
                         <SpendingDonut data={summary?.spending_by_category} />
+                    </div>
+                    <div className="space-y-2 border-t border-[var(--border-color)] pt-4">
+                        {topCategoryEntries.length === 0 && (
+                            <div className="text-sm text-[var(--text-muted)]">Sem despesas categorizadas neste mês.</div>
+                        )}
+                        {topCategoryEntries.map(([category, amount]) => {
+                            const pct = totalCategorySpend > 0 ? (amount / (summary?.expenses || totalCategorySpend)) * 100 : 0
+                            return (
+                                <div key={category} className="flex items-center justify-between gap-3 text-sm">
+                                    <div className="min-w-0">
+                                        <div className="text-white truncate">{category}</div>
+                                        <div className="text-xs text-[var(--text-muted)]">{pct.toFixed(1)}% das despesas do mês</div>
+                                    </div>
+                                    <div className="font-mono text-right text-white whitespace-nowrap">{currency(amount)}</div>
+                                </div>
+                            )
+                        })}
                     </div>
                 </div>
             </div>
@@ -242,7 +334,7 @@ export default function Overview() {
                                     <td className="table-cell text-[#ccc] group-hover:text-white">{e.description}</td>
                                     <td className="table-cell"><span className="badge-blue">{e.category}</span></td>
                                     <td className="table-cell"><span className={kindBadge[e.kind] ?? 'badge-blue'}>{kindLabel[e.kind] ?? e.kind}</span></td>
-                                    <td className="table-cell text-right font-mono text-sm text-[var(--color-expense)] group-hover:opacity-80">-{fmt(e.amount)}</td>
+                                    <td className="table-cell text-right font-mono text-sm text-[var(--color-expense)] group-hover:opacity-80">-{currency(e.amount)}</td>
                                 </tr>
                             ))}
                         </tbody>

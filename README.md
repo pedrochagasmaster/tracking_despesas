@@ -84,6 +84,12 @@ The frontend now uses:
 - `VITE_API_BASE_URL` when defined, otherwise
 - `http(s)://<current-hostname>:8000`
 
+Friendly local URLs are also available via `portless`:
+
+- Dashboard: `http://tracking.localhost:1355`
+- API: `http://api.tracking.localhost:1355`
+- Docs: `http://api.tracking.localhost:1355/docs`
+
 Examples:
 
 ```bash
@@ -130,8 +136,17 @@ The output includes:
 
 - `agent_connection.dashboard_url_local`
 - `agent_connection.dashboard_url_lan`
+- `agent_connection.dashboard_url_friendly`
+- `agent_connection.dashboard_url_preferred`
 - `agent_connection.api_base_url_local`
 - `agent_connection.api_base_url_lan`
+- `agent_connection.api_base_url_friendly`
+- `agent_connection.api_base_url_preferred`
+
+Operational note:
+
+- The current local setup keeps API/frontend under `systemd --user`.
+- `portless` runs as a separate local proxy layer and exposes stable friendly URLs without changing the internal app ports.
 
 ## Workbook generation
 

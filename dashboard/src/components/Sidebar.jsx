@@ -10,7 +10,7 @@ const links = [
     { to: '/inbox', label: 'Inbox' },
 ]
 
-export default function Sidebar({ isOpen = false, onClose = null }) {
+export default function Sidebar({ isOpen = false, onClose = null, footerContent = null }) {
     const shellClass = isOpen
         ? 'translate-x-0'
         : '-translate-x-full lg:translate-x-0'
@@ -49,7 +49,8 @@ export default function Sidebar({ isOpen = false, onClose = null }) {
             </nav>
 
             {/* Footer */}
-            <div className="p-6 border-t border-[var(--border-color)]">
+            <div className="p-6 border-t border-[var(--border-color)] space-y-4">
+                {footerContent}
                 <div className="flex items-center gap-3">
                     <div className="w-2 h-2 rounded-full bg-[#555] animate-pulse"></div>
                     <div>

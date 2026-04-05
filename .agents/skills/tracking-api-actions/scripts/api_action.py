@@ -76,6 +76,13 @@ def build_parser() -> argparse.ArgumentParser:
     sb.add_argument("--category", required=True)
     sb.add_argument("--amount", type=float, required=True)
 
+    ainst = sub.add_parser("add-installment")
+    ainst.add_argument("--start-date", required=True)
+    ainst.add_argument("--total-amount", type=float, required=True)
+    ainst.add_argument("--installments", type=int, required=True)
+    ainst.add_argument("--category", required=True)
+    ainst.add_argument("--description", required=True)
+
     ue = sub.add_parser("update-expense")
     ue.add_argument("--id", type=int, required=True)
     ue.add_argument("--expense-date", required=True)
@@ -85,6 +92,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     de = sub.add_parser("delete-expense")
     de.add_argument("--id", type=int, required=True)
+
+    di = sub.add_parser("delete-installment")
+    di.add_argument("--id", type=int, required=True)
 
     ub = sub.add_parser("update-budget")
     ub.add_argument("--category", required=True)
@@ -149,6 +159,15 @@ def main() -> int:
         if args.start_date:
             body["start_date"] = args.start_date
         res = request("POST", args.base, "/api/subscriptions", body=body)
+    elif a == "add-installment":
+        body = {
+            "start_date": args.start_date,
+            "total_amount": args.total_amount,
+            "installments": args.installments,
+            "category": args.category,
+            "description": args.description,
+        }
+        res = request("POST", args.base, "/api/installments", body=body)
     elif a == "set-budget":
         body = {
             "category": args.category,
@@ -165,6 +184,8 @@ def main() -> int:
         res = request("PUT", args.base, f"/api/expenses/{args.id}", body=body)
     elif a == "delete-expense":
         res = request("DELETE", args.base, f"/api/expenses/{args.id}")
+    elif a == "delete-installment":
+        res = request("DELETE", args.base, f"/api/installments/{args.id}")
     elif a == "update-budget":
         body = {
             "category": args.category,

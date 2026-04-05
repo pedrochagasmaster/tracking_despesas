@@ -8,7 +8,7 @@ function Delta({ value, prevValue }) {
     if (prevValue == null || prevValue === 0) return null
     const pct = ((value - prevValue) / Math.abs(prevValue)) * 100
     const abs = Math.abs(pct)
-    if (abs < 0.5) return <span className="badge bg-slate-700/50 text-slate-400"><Minus size={10} /> 0%</span>
+    if (abs < 0.5) return <span className="badge border-transparent text-[var(--text-muted)] px-0"><Minus size={10} /> 0%</span>
     const up = pct > 0
     return (
         <span className={up ? 'badge-green' : 'badge-red'}>
@@ -20,38 +20,37 @@ function Delta({ value, prevValue }) {
 
 export default function KpiCard({ label, value, prev, icon: Icon, color = 'violet', suffix, invertDelta }) {
     const colorMap = {
-        violet: 'from-violet-500/25 to-violet-600/5 border-violet-500/30 text-violet-300',
-        emerald: 'from-emerald-500/25 to-emerald-600/5 border-emerald-500/30 text-emerald-300',
-        red: 'from-red-500/25 to-red-600/5 border-red-500/30 text-red-300',
-        amber: 'from-amber-500/25 to-amber-600/5 border-amber-500/30 text-amber-300',
-        blue: 'from-cyan-500/25 to-blue-600/5 border-cyan-500/30 text-cyan-300',
+        violet: 'text-[#9d90ad]',
+        emerald: 'text-[var(--color-income)]',
+        red: 'text-[var(--color-expense)]',
+        amber: 'text-[var(--color-warn)]',
+        blue: 'text-[var(--color-info)]',
     }
 
-    const card = colorMap[color] ?? colorMap.violet
-    const [from, to, border, iconColor] = card.split(' ')
+    const iconColor = colorMap[color] ?? colorMap.violet
 
     return (
-        <div className={`kpi-card animate-slide-up bg-gradient-to-br ${from} ${to} border ${border}`}>
+        <div className="kpi-card animate-slide-up">
             <div className="flex items-start justify-between">
-                <span className="label">{label}</span>
+                <span className="label" style={{ fontFamily: '"Space Mono", monospace' }}>{label}</span>
                 {Icon && (
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-slate-900/70 border border-slate-700/70">
-                        <Icon size={16} className={iconColor} />
+                    <div className="w-8 h-8 flex items-center justify-center border border-[var(--border-color)]">
+                        <Icon size={14} className={iconColor} />
                     </div>
                 )}
             </div>
-            <div className="mt-2">
-                <span className="text-2xl lg:text-[1.75rem] font-bold text-white tracking-tight">
+            <div className="mt-4">
+                <span className="text-3xl lg:text-[2rem] font-normal text-white tracking-tight" style={{ fontFamily: '"DM Serif Text", serif' }}>
                     {typeof value === 'number' ? fmt(value) : value}
-                    {suffix && <span className="text-base font-medium text-slate-400 ml-1">{suffix}</span>}
+                    {suffix && <span className="text-base font-medium text-[var(--text-secondary)] ml-1.5" style={{ fontFamily: '"Manrope", sans-serif' }}>{suffix}</span>}
                 </span>
             </div>
-            <div className="flex items-center gap-2 mt-1.5">
+            <div className="flex items-center gap-2 mt-4 pt-3 border-t border-[var(--border-color)]">
                 {invertDelta
                     ? <Delta value={-value} prevValue={prev != null ? -prev : null} />
                     : <Delta value={value} prevValue={prev} />
                 }
-                <span className="text-xs text-slate-500">vs mês anterior</span>
+                <span className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider" style={{ fontFamily: '"Space Mono", monospace' }}>vs mês anterior</span>
             </div>
         </div>
     )

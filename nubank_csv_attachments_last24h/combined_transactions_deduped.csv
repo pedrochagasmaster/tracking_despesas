@@ -1,0 +1,285 @@
+schema_type,date,amount,description,identifier,title,source_file,keep,categoria_orcamento
+cartao,2026-01-03,86.66,,,30036 Jundiai Shoppin - Parcela 2/3,2026-02-23_12-22-31__Extrato da fatura do Cartão Nubank__19c8b185102a8fd7__Nubank_2026-02-10.csv,false,
+cartao,2026-01-03,542.57,,,AXTUR FRETAMENTO E TRANSPORTE EXECU - 2/2,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-03,4.12,,,Amazon Aws Servicos Br,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-03,115.11,,,Amazon Marketplace - Parcela 4/4,2026-02-23_12-22-31__Extrato da fatura do Cartão Nubank__19c8b185102a8fd7__Nubank_2026-02-10.csv,false,
+cartao,2026-01-03,106.62,,,Amazon Marketplace - Parcela 4/5,2026-02-23_12-22-31__Extrato da fatura do Cartão Nubank__19c8b185102a8fd7__Nubank_2026-02-10.csv,false,
+cartao,2026-01-03,33.76,,,Amazon Marketplace Cc - Parcela 3/6,2026-02-23_12-22-31__Extrato da fatura do Cartão Nubank__19c8b185102a8fd7__Nubank_2026-02-10.csv,false,
+cartao,2026-01-03,168.61,,,Amazon Marketplace Cc - Parcela 4/8,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-03,33.45,,,Amazonmktplc*Clbprodut - Parcela 2/2,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-03,35.09,,,Amazonmktplc*Mainycris - Parcela 3/5,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-03,59.78,,,Amazonmktplc*Mariarosa - Parcela 8/10,2026-02-23_12-22-31__Extrato da fatura do Cartão Nubank__19c8b185102a8fd7__Nubank_2026-02-10.csv,false,
+cartao,2026-01-03,156.86,,,Amazonmktplc*Pratitolt - Parcela 4/7,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-03,52.11,,,Amazonmktplc*Vitrinedi - Parcela 3/7,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-03,13.70,,,Auto Ban Jundiai,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,Transporte
+cartao,2026-01-03,31.60,,,Casa Granado - Parcela 2/5,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-03,67.98,,,Cea Rnd 629 Ecpc - Parcela 2/2,2026-02-23_12-22-31__Extrato da fatura do Cartão Nubank__19c8b185102a8fd7__Nubank_2026-02-10.csv,false,
+cartao,2026-01-03,1114.98,,,Daniel de Lima Chagas - 4/4,2026-02-23_12-22-31__Extrato da fatura do Cartão Nubank__19c8b185102a8fd7__Nubank_2026-02-10.csv,false,
+cartao,2026-01-03,61.01,,,Drogasil2573 - Parcela 2/3,2026-02-23_12-22-31__Extrato da fatura do Cartão Nubank__19c8b185102a8fd7__Nubank_2026-02-10.csv,false,Farmácia
+cartao,2026-01-03,363.84,,,ESTUDIO MATER LTDA - 3/6,2026-02-23_12-22-31__Extrato da fatura do Cartão Nubank__19c8b185102a8fd7__Nubank_2026-02-10.csv,false,
+cartao,2026-01-03,36.63,,,H&M Loja Dpedro Campin - Parcela 3/3,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-03,59.85,,,Lojas Renner Fl - Parcela 2/2,2026-02-23_12-22-31__Extrato da fatura do Cartão Nubank__19c8b185102a8fd7__Nubank_2026-02-10.csv,false,
+cartao,2026-01-03,29.99,,,Mercadolivre*3produto - Parcela 2/2,2026-02-23_12-22-31__Extrato da fatura do Cartão Nubank__19c8b185102a8fd7__Nubank_2026-02-10.csv,false,
+cartao,2026-01-03,48.56,,,Mercadolivre*3produto - Parcela 2/4,2026-02-23_12-22-31__Extrato da fatura do Cartão Nubank__19c8b185102a8fd7__Nubank_2026-02-10.csv,false,
+cartao,2026-01-03,53.42,,,Mp *Srbbindustriaecom - Parcela 4/8,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-03,65.00,,,Nestle Brasil Ltda. - Parcela 2/6,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-03,101.70,,,PAGAR.ME PAGAMENTOS - 2/2,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-03,51.63,,,Pg *Pacotinho Sling - Parcela 3/6,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-03,3.50,,,Rodoanel Pedagio,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,Transporte
+cartao,2026-01-03,54.83,,,Sephora Jundiai - Parcela 6/6,2026-02-23_12-22-31__Extrato da fatura do Cartão Nubank__19c8b185102a8fd7__Nubank_2026-02-10.csv,false,
+cartao,2026-01-03,99.80,,,Sephoramorumbi - Parcela 5/5,2026-02-23_12-22-31__Extrato da fatura do Cartão Nubank__19c8b185102a8fd7__Nubank_2026-02-10.csv,false,
+cartao,2026-01-03,67.32,,,Supermercado Carpan,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,Alimentação
+cartao,2026-01-03,96.68,,,Supermercado Jva - Parcela 2/3,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,Alimentação
+cartao,2026-01-03,37.82,,,Twconveniencia,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,Alimentação
+cartao,2026-01-04,13.70,,,Auto Ban Jundiai,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,Transporte
+cartao,2026-01-04,-2243.36,,,Pagamento recebido,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-04,-3941.81,,,Pagamento recebido,2026-02-23_12-22-31__Extrato da fatura do Cartão Nubank__19c8b185102a8fd7__Nubank_2026-02-10.csv,false,
+cartao,2026-01-04,4.30,,,Pista,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,Transporte
+cartao,2026-01-04,3.50,,,Rodoanel Pedagio,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,Transporte
+cartao,2026-01-05,109.00,,,Br1*Cashbarber,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-05,-100.00,,,Pagamento recebido,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-07,13.60,,,Auto Ban Jundiai,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,Transporte
+cartao,2026-01-07,257.83,,,Auto Posto Harmonia,2026-02-23_12-22-31__Extrato da fatura do Cartão Nubank__19c8b185102a8fd7__Nubank_2026-02-10.csv,false,Transporte
+cartao,2026-01-07,23.00,,,Multifran Quiosques C,2026-02-23_12-22-31__Extrato da fatura do Cartão Nubank__19c8b185102a8fd7__Nubank_2026-02-10.csv,false,Transporte
+cartao,2026-01-07,195.71,,,Wellhub Gympass Br Wel,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-08,14.14,,,Drogaria Japi,2026-02-23_12-22-31__Extrato da fatura do Cartão Nubank__19c8b185102a8fd7__Nubank_2026-02-10.csv,false,Farmácia
+cartao,2026-01-10,383.13,,,AXTUR FRETAMENTO E TRANSPORTE EXECU - 1/3,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-10,27.93,,,Anthropic,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,Luxos
+cartao,2026-01-10,160.56,,,CPFL PIRATININGA - 1/2,2026-02-23_12-22-31__Extrato da fatura do Cartão Nubank__19c8b185102a8fd7__Nubank_2026-02-10.csv,false,Luz
+cartao,2026-01-10,19.96,,,INDIGO,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,Shopping
+cartao,2026-01-10,0.97,,,"IOF de ""Anthropic""",2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,Luxos
+cartao,2026-01-10,373.84,,,MERCADO PAGO INSTITUICAO DE PAGAMENTO LTDA - 1/3,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-10,1059.86,,,Pedro Andrietta Chagas,2026-02-23_12-22-31__Extrato da fatura do Cartão Nubank__19c8b185102a8fd7__Nubank_2026-02-10.csv,false,
+cartao,2026-01-10,4.09,,,Smart Break,2026-02-23_12-22-31__Extrato da fatura do Cartão Nubank__19c8b185102a8fd7__Nubank_2026-02-10.csv,false,Luxos
+cartao,2026-01-10,5.99,,,Smart Break,2026-02-23_12-22-31__Extrato da fatura do Cartão Nubank__19c8b185102a8fd7__Nubank_2026-02-10.csv,false,Luxos
+cartao,2026-01-10,142.12,,,TELEFONICA BRAS,2026-02-23_12-22-31__Extrato da fatura do Cartão Nubank__19c8b185102a8fd7__Nubank_2026-02-10.csv,false,Internet
+cartao,2026-01-11,309.09,,,Allianz Segu*1 de,2026-02-23_12-22-31__Extrato da fatura do Cartão Nubank__19c8b185102a8fd7__Nubank_2026-02-10.csv,false,Seguro Carro
+cartao,2026-01-11,16.00,,,Gemaxi Administracao,2026-02-23_12-22-31__Extrato da fatura do Cartão Nubank__19c8b185102a8fd7__Nubank_2026-02-10.csv,false,Transporte
+cartao,2026-01-11,204.05,,,Quintal Fratelli,2026-02-23_12-22-31__Extrato da fatura do Cartão Nubank__19c8b185102a8fd7__Nubank_2026-02-10.csv,false,Luxos
+cartao,2026-01-13,12.00,,,Adega dos Primos,2026-02-23_12-22-31__Extrato da fatura do Cartão Nubank__19c8b185102a8fd7__Nubank_2026-02-10.csv,false,Alimentação
+cartao,2026-01-14,5.90,,,Pontodoacai,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,Alimentação
+cartao,2026-01-14,55.00,,,Teodora Gastronomia Re,2026-02-23_12-22-31__Extrato da fatura do Cartão Nubank__19c8b185102a8fd7__Nubank_2026-02-10.csv,false,Alimentação
+cartao,2026-01-16,-1000.00,,,Pagamento recebido,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-17,53.90,,,Google Youtube,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-18,39.60,,,Amazon Marketplace - Parcela 1/3,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-18,44.73,,,Amazon Retail Br Cpi - Parcela 1/2,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-18,75.98,,,Cea Jns 257 Ecpc,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-18,120.00,,,Contabilizei Tecnologi,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-18,257.39,,,Garden Cafe Jundiai,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-18,17.00,,,Multiplan Administrado,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-18,62.70,,,Pangioni Cafe,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-20,95.99,,,Google Chatgpt,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-20,5.90,,,Pontodoacai,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-20,4.09,,,Smart Break*Vmt*Smartb,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-23,22.30,,,Oba Hortifruti,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-23,59.33,,,Supermercado Jva,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-23,8.75,,,Twconveniencia,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-24,9.90,,,Ebn*Xsolla,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-24,-1000.00,,,Pagamento recebido,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-24,-1571.46,,,Pagamento recebido,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-24,-4566.52,,,Pagamento recebido,2026-02-23_12-22-31__Extrato da fatura do Cartão Nubank__19c8b185102a8fd7__Nubank_2026-02-10.csv,false,
+cartao,2026-01-25,206.31,,,Amazon Marketplace - Parcela 1/4,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-25,59.72,,,Pg *Marazul Comercio - Parcela 1/3,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-26,89.69,,,Covabra Supermercados,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-26,32.12,,,Supermercado Jva,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-26,266.59,,,Supermercado Jva - Parcela 1/2,2026-02-23_12-22-31__Extrato da fatura do Cartão Nubank__19c8b185102a8fd7__Nubank_2026-02-10.csv,false,
+cartao,2026-01-27,1.01,,,"IOF de ""Medium.Com""",2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-27,29.03,,,Medium.Com,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-27,9.88,,,Twconveniencia,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-28,9.00,,,Adega dos Primos,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-28,108.98,,,Github Inc.,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-28,14.99,,,Google One,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-28,3.81,,,"IOF de ""Github Inc.""",2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-28,44.90,,,Netflix.Com,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-29,738.24,,,MERCADO PAGO INSTITUICAO DE PAGAMENTO LTDA - 1/2,2026-02-23_12-22-31__Extrato da fatura do Cartão Nubank__19c8b185102a8fd7__Nubank_2026-02-10.csv,false,
+cartao,2026-01-29,-1004.84,,,Pagamento recebido,2026-02-23_12-22-31__Extrato da fatura do Cartão Nubank__19c8b185102a8fd7__Nubank_2026-02-10.csv,false,
+cartao,2026-01-29,-939.65,,,Pagamento recebido,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-29,72.67,,,Supermercado Jva,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-30,301.45,,,Auto Posto Parque da U,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-30,15.80,,,Noz Paes e Doces,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-31,105.00,,,Florabemteviltda,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-31,30.00,,,Florabemteviltda,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-01-31,46.88,,,Supermercado Jva,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-02-01,13.70,,,Auto Ban Jundiai,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,true,Shopping
+cartao,2026-02-01,65.00,,,Maternidade Star,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,true,Isabel
+conta,2026-02-01,-3.00,Transferência enviada pelo Pix - FERNANDA CAVANA ORLANDIN - •••.360.368-•• - BCO BRADESCO S.A. (0237) Agência: 7732 Conta: 14292-1,697f8cf9-8420-4295-8fff-337c2db1e942,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+cartao,2026-02-02,444.07,,,Covabra Supermercados,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,true,Alimentação
+cartao,2026-02-02,12.98,,,Dcs Supermercados,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,true,Alimentação
+cartao,2026-02-02,259.11,,,Marcela Siqueira Moreira - 1/2,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,false,
+cartao,2026-02-02,92.86,,,Raia Drogasil,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,true,Isabel
+cartao,2026-02-02,29.90,,,Rd Saude,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,true,Farmácia
+cartao,2026-02-02,70.78,,,Supermercado Jva,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,true,Alimentação
+cartao,2026-02-02,15.89,,,Twconveniencia,2026-02-23_12-21-36__Extrato da fatura do Cartão Nubank__19c8b177d2c16520__Nubank_2026-02-10.csv,true,Alimentação
+conta,2026-02-02,-480.00,Transferência enviada pelo Pix - Marcela Siqueira Moreira - •••.668.418-•• - NU PAGAMENTOS - IP (0260) Agência: 1 Conta: 68526493-7,69808ee8-6e58-4ad1-a251-f79818f65c0e,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-02,480.00,Valor adicionado na conta por cartão de crédito - Valor adicionado para Pix no Crédito,69808ee8-6e58-4ad1-a251-f79818f65c0e,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+cartao,2026-02-03,86.66,,,30036 Jundiai Shoppin - Parcela 3/3,2026-02-23_12-22-19__Extrato da fatura do Cartão Nubank__19c8b181df0b76f9__Nubank_2026-03-10.csv,false,
+cartao,2026-02-03,383.13,,,AXTUR FRETAMENTO E TRANSPORTE EXECU - 2/3,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-03,4.05,,,Amazon Aws Servicos Br,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-03,39.60,,,Amazon Marketplace - Parcela 2/3,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-03,206.30,,,Amazon Marketplace - Parcela 2/4,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-03,106.62,,,Amazon Marketplace - Parcela 5/5,2026-02-23_12-22-19__Extrato da fatura do Cartão Nubank__19c8b181df0b76f9__Nubank_2026-03-10.csv,false,
+cartao,2026-02-03,33.76,,,Amazon Marketplace Cc - Parcela 4/6,2026-02-23_12-22-19__Extrato da fatura do Cartão Nubank__19c8b181df0b76f9__Nubank_2026-03-10.csv,false,
+cartao,2026-02-03,168.61,,,Amazon Marketplace Cc - Parcela 5/8,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-03,44.73,,,Amazon Retail Br Cpi - Parcela 2/2,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-03,35.09,,,Amazonmktplc*Mainycris - Parcela 4/5,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-03,59.78,,,Amazonmktplc*Mariarosa - Parcela 9/10,2026-02-23_12-22-19__Extrato da fatura do Cartão Nubank__19c8b181df0b76f9__Nubank_2026-03-10.csv,false,
+cartao,2026-02-03,156.86,,,Amazonmktplc*Pratitolt - Parcela 5/7,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-03,52.11,,,Amazonmktplc*Vitrinedi - Parcela 4/7,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-03,160.56,,,CPFL PIRATININGA - 2/2,2026-02-23_12-22-19__Extrato da fatura do Cartão Nubank__19c8b181df0b76f9__Nubank_2026-03-10.csv,true,Luz
+cartao,2026-02-03,31.60,,,Casa Granado - Parcela 3/5,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-03,61.01,,,Drogasil2573 - Parcela 3/3,2026-02-23_12-22-19__Extrato da fatura do Cartão Nubank__19c8b181df0b76f9__Nubank_2026-03-10.csv,true,Farmácia
+cartao,2026-02-03,363.84,,,ESTUDIO MATER LTDA - 4/6,2026-02-23_12-22-19__Extrato da fatura do Cartão Nubank__19c8b181df0b76f9__Nubank_2026-03-10.csv,false,
+cartao,2026-02-03,738.24,,,MERCADO PAGO INSTITUICAO DE PAGAMENTO LTDA - 2/2,2026-02-23_12-22-19__Extrato da fatura do Cartão Nubank__19c8b181df0b76f9__Nubank_2026-03-10.csv,false,
+cartao,2026-02-03,373.84,,,MERCADO PAGO INSTITUICAO DE PAGAMENTO LTDA - 2/3,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-03,259.11,,,Marcela Siqueira Moreira - 2/2,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-03,48.56,,,Mercadolivre*3produto - Parcela 3/4,2026-02-23_12-22-19__Extrato da fatura do Cartão Nubank__19c8b181df0b76f9__Nubank_2026-03-10.csv,false,
+cartao,2026-02-03,53.42,,,Mp *Srbbindustriaecom - Parcela 5/8,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-03,65.00,,,Nestle Brasil Ltda. - Parcela 3/6,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-03,59.71,,,Pg *Marazul Comercio - Parcela 2/3,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-03,51.63,,,Pg *Pacotinho Sling - Parcela 4/6,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-03,266.58,,,Supermercado Jva - Parcela 2/2,2026-02-23_12-22-19__Extrato da fatura do Cartão Nubank__19c8b181df0b76f9__Nubank_2026-03-10.csv,true,Alimentação
+cartao,2026-02-03,96.68,,,Supermercado Jva - Parcela 3/3,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,true,Alimentação
+cartao,2026-02-04,15.50,,,Drogaria Japi,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,true,Farmácia
+cartao,2026-02-04,-1199.88,,,Pagamento recebido,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+conta,2026-02-04,2200.00,Transferência Recebida - PEDRO ANDRIETTA CHAGAS CONSULTORIA EM TECNOLOGIA DA INFORMACAO LTDA - 50.290.456/0001-01 - NU PAGAMENTOS - IP (0260) Agência: 1 Conta: 351783749-3,698358ab-131c-4e8f-ae8a-87ae9cedb9fb,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-04,-2200.00,Transferência enviada pelo Pix - Pedro Andrietta Chagas - •••.385.968-•• - NU PAGAMENTOS - IP (0260) Agência: 1 Conta: 13350437-8,698358ab-ea49-4f93-9f0d-54ad12540fb1,,2026-02-23_12-22-04__Seu extrato da conta Nu Empresas__19c8b17eb8960648__NU_3517837493_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-04,2200.00,Valor adicionado na conta por cartão de crédito - Valor adicionado para Pix no Crédito,698358ab-ea49-4f93-9f0d-54ad12540fb1,,2026-02-23_12-22-04__Seu extrato da conta Nu Empresas__19c8b17eb8960648__NU_3517837493_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-04,-1199.88,Pagamento de fatura,698358bf-636c-4d25-9fb3-df9a0224f110,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-04,-1000.00,Transferência enviada pelo Pix - Psicologia Contemporanea Ltda - 43.543.196/0001-73 - BANCO INTER (0077) Agência: 1 Conta: 18549519-2,698358ec-4712-48d4-acab-1fc5b5cc71c1,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+cartao,2026-02-05,109.00,,,Br1*Cashbarber,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-05,54.00,,,Marcia Cristiani dos S,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-05,9.48,,,Oxxo Chico Nobre,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,true,Alimentação
+cartao,2026-02-05,185.00,,,Sergiohidekazu,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,true,Luxos
+conta,2026-02-05,-600.00,Transferência enviada pelo Pix - REVITARE - 13.011.042/0001-70 - COOP SICREDI FRONTEIR PR/SC/SP Agência: 738 Conta: 85514-6,6985140e-fa62-45d5-9abf-4d9f3ebf3f47,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-05,600.00,Valor adicionado na conta por cartão de crédito - Valor adicionado para Pix no Crédito,6985140e-fa62-45d5-9abf-4d9f3ebf3f47,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+cartao,2026-02-06,-21.30,,,"Crédito de ""AMAZON MARKETPLACE""",2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-06,-39.60,,,"Estorno de ""AMAZON MARKETPLACE""",2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-06,8.99,,,Gl Variedades,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-07,67.51,,,Wellhub Gympass Br Wel,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-08,17.00,,,Multiplan Administrado,2026-02-23_12-22-19__Extrato da fatura do Cartão Nubank__19c8b181df0b76f9__Nubank_2026-03-10.csv,true,Transporte
+cartao,2026-02-09,21.79,,,Twconveniencia,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,true,Alimentação
+conta,2026-02-09,5411.78,Resgate RDB,698a0808-f203-46e0-8109-c8951554ef94,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-09,-5159.43,Pagamento de boleto efetuado - PJBANK PAGAMENTOS S A,698a0881-78c9-43ce-9887-1995b9f38f5e,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-09,-250.00,Transferência enviada pelo Pix - Walquíria Aparecida Lemos - •••.808.178-•• - NU PAGAMENTOS - IP (0260) Agência: 1 Conta: 21524271-4,698a0903-ff22-41de-8704-62bc789f2b3a,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-09,-138.26,Transferência enviada pelo Pix - MERCADO PAGO INSTITUICAO DE PAGAMENTO LTDA - 10.573.521/0001-91 - MERCADO PAGO IP LTDA. (0323) Agência: 1 Conta: 1488917887-3,698a09b7-1e96-46d1-98ae-2ed1b3651cbd,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-09,138.26,Valor adicionado na conta por cartão de crédito - Valor adicionado para Pix no Crédito,698a09b7-1e96-46d1-98ae-2ed1b3651cbd,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-09,20.00,Transferência Recebida - Pedro Andrietta Chagas - •••.385.968-•• - NU PAGAMENTOS - IP (0260) Agência: 1 Conta: 13350437-8,698a0bb0-0e12-418d-af0f-e3ba89328f1d,,2026-02-23_12-22-04__Seu extrato da conta Nu Empresas__19c8b17eb8960648__NU_3517837493_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-09,-20.00,Transferência enviada pelo Pix - PEDRO ANDRIETTA CHAGAS CONSULTORIA EM TECNOLOGIA D - 50.290.456/0001-01 - NU PAGAMENTOS - IP (0260) Agência: 1 Conta: 351783749-3,698a0bb0-2f4f-4ee9-9b55-88e6b080fb76,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-09,-20.55,Aplicação RDB,698a0be3-43b6-4f15-892c-e0f466bb1f34,,2026-02-23_12-22-04__Seu extrato da conta Nu Empresas__19c8b17eb8960648__NU_3517837493_01FEV2026_22FEV2026.csv,false,
+cartao,2026-02-10,265.67,,,DAE JUNDIAI,2026-02-23_12-22-19__Extrato da fatura do Cartão Nubank__19c8b181df0b76f9__Nubank_2026-03-10.csv,true,Água
+cartao,2026-02-10,171.75,,,ERJ - DETRAN,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-10,152.04,,,MERCADO PAGO INSTITUICAO DE PAGAMENTO LTDA,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-10,461.56,,,Pedro Andrietta Chagas - 1/2,2026-02-23_12-22-19__Extrato da fatura do Cartão Nubank__19c8b181df0b76f9__Nubank_2026-03-10.csv,false,
+cartao,2026-02-10,667.42,,,REVITARE,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-10,1110.97,,,SEFAZ RJ - SECRETARIA DE ESTADO DE FAZENDA DO RJ,2026-02-23_12-22-19__Extrato da fatura do Cartão Nubank__19c8b181df0b76f9__Nubank_2026-03-10.csv,false,
+cartao,2026-02-10,143.81,,,VIVO-SP TELESP CELUL,2026-02-23_12-22-19__Extrato da fatura do Cartão Nubank__19c8b181df0b76f9__Nubank_2026-03-10.csv,true,Internet
+conta,2026-02-10,500.00,Transferência recebida pelo Pix - Pedro Andrietta Chagas - •••.385.968-•• - MERCADO PAGO IP LTDA. (0323) Agência: 1 Conta: 9372930480-5,698b2f88-287a-462c-945b-77a473f43919,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-10,-309.07,Pagamento de boleto efetuado - ALLIANZ SEGUROS SA,698b2fab-756e-4214-9f8f-9b495f7f41ed,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,true,Seguro Carro
+cartao,2026-02-11,19.90,,,Amazon Servicos de Var,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,39.60,,,Amazon Marketplace - Parcela 3/3,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,206.30,,,Amazon Marketplace - Parcela 3/4,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,206.30,,,Amazon Marketplace - Parcela 4/4,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,33.76,,,Amazon Marketplace Cc - Parcela 5/6,2026-02-23_12-22-19__Extrato da fatura do Cartão Nubank__19c8b181df0b76f9__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,33.76,,,Amazon Marketplace Cc - Parcela 6/6,2026-02-23_12-22-19__Extrato da fatura do Cartão Nubank__19c8b181df0b76f9__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,168.61,,,Amazon Marketplace Cc - Parcela 6/8,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,168.61,,,Amazon Marketplace Cc - Parcela 7/8,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,168.61,,,Amazon Marketplace Cc - Parcela 8/8,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,35.09,,,Amazonmktplc*Mainycris - Parcela 5/5,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,59.78,,,Amazonmktplc*Mariarosa - Parcela 10/10,2026-02-23_12-22-19__Extrato da fatura do Cartão Nubank__19c8b181df0b76f9__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,156.86,,,Amazonmktplc*Pratitolt - Parcela 6/7,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,156.86,,,Amazonmktplc*Pratitolt - Parcela 7/7,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,52.11,,,Amazonmktplc*Vitrinedi - Parcela 5/7,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,52.11,,,Amazonmktplc*Vitrinedi - Parcela 6/7,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,52.11,,,Amazonmktplc*Vitrinedi - Parcela 7/7,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,31.60,,,Casa Granado - Parcela 4/5,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,31.60,,,Casa Granado - Parcela 5/5,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,-0.16,,,Desconto Antecipação,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,-0.29,,,Desconto Antecipação,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,-0.41,,,Desconto Antecipação,2026-02-23_12-22-19__Extrato da fatura do Cartão Nubank__19c8b181df0b76f9__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,-0.50,,,Desconto Antecipação,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,-0.79,,,Desconto Antecipação,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,-0.84,,,Desconto Antecipação,2026-02-23_12-22-19__Extrato da fatura do Cartão Nubank__19c8b181df0b76f9__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,-1.29,,,Desconto Antecipação,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,-2.59,,,Desconto Antecipação,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,-2.66,,,Desconto Antecipação,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,-3.24,,,Desconto Antecipação,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,-3.92,,,Desconto Antecipação,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,-5.15,,,Desconto Antecipação,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,-7.98,,,Desconto Antecipação,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,48.56,,,Mercadolivre*3produto - Parcela 4/4,2026-02-23_12-22-19__Extrato da fatura do Cartão Nubank__19c8b181df0b76f9__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,53.42,,,Mp *Srbbindustriaecom - Parcela 6/8,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,53.42,,,Mp *Srbbindustriaecom - Parcela 7/8,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,53.42,,,Mp *Srbbindustriaecom - Parcela 8/8,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,65.00,,,Nestle Brasil Ltda. - Parcela 4/6,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,65.00,,,Nestle Brasil Ltda. - Parcela 5/6,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,65.00,,,Nestle Brasil Ltda. - Parcela 6/6,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,-174.11,,,Pagamento recebido,2026-02-23_12-22-19__Extrato da fatura do Cartão Nubank__19c8b181df0b76f9__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,-2016.03,,,Pagamento recebido,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,-3502.98,,,Pagamento recebido,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,-3924.66,,,Pagamento recebido,2026-02-23_12-22-19__Extrato da fatura do Cartão Nubank__19c8b181df0b76f9__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,59.71,,,Pg *Marazul Comercio - Parcela 3/3,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,51.63,,,Pg *Pacotinho Sling - Parcela 5/6,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-12,51.63,,,Pg *Pacotinho Sling - Parcela 6/6,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+conta,2026-02-12,32669.95,Transferência Recebida - MASTERCARD BRASIL SOLUCOES DE PAGAMENTO LTDA - 05.577.343/0001-37 - Banco Citibank S.A. (0745) Agência: 1 Conta: 151903-4,698dadb3-0eb3-4ff4-ac25-ccc8b8796b52,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-12,7142.86,Transferência Recebida - MASTERCARD BRASIL SOLUCOES DE PAGAMENTO LTDA - 05.577.343/0001-37 - Banco Citibank S.A. (0745) Agência: 1 Conta: 151903-4,698dadea-9356-497b-8f4f-ff44acfc9829,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-12,-3502.98,Pagamento de fatura,698dd6bb-eb72-4b27-8876-415e037de226,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-12,3924.66,Transferência Recebida - Pedro Andrietta Chagas - •••.385.968-•• - NU PAGAMENTOS - IP (0260) Agência: 1 Conta: 13350437-8,698dd746-33a3-4351-8a06-b8cdfb094954,,2026-02-23_12-22-04__Seu extrato da conta Nu Empresas__19c8b17eb8960648__NU_3517837493_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-12,-3924.66,Transferência enviada pelo Pix - PEDRO ANDRIETTA CHAGAS CONSULTORIA EM TECNOLOGIA D - 50.290.456/0001-01 - NU PAGAMENTOS - IP (0260) Agência: 1 Conta: 351783749-3,698dd746-59df-486c-b451-f08e49017ffc,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-12,-3924.66,Pagamento de fatura,698dd774-4f45-48ae-a4d2-9e80d59e680a,,2026-02-23_12-22-04__Seu extrato da conta Nu Empresas__19c8b17eb8960648__NU_3517837493_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-12,-2016.03,Pagamento de fatura,698dd907-4a41-4060-a2da-ae7be7ba6996,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-12,-5160.00,Aplicação RDB,698ddaeb-42d6-4a9e-8378-c36c9632174e,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-12,0.58,Resgate RDB,698ddb05-f27a-4215-a2a6-5e2e1b914ee3,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-12,7.19,Resgate RDB,698ddb17-93e2-4f32-ae5e-8190e0b521b2,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-12,2.55,Resgate RDB,698ddb37-6bce-411c-b03b-cd89093b9426,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-12,-2110.04,Transferência enviada pelo Pix - MERCADO PAGO INSTITUICAO DE PAGAMENTO LTDA - 10.573.521/0001-91 - MERCADO PAGO IP LTDA. (0323) Agência: 1 Conta: 1488917887-3,698ddd08-dacd-49f3-b1aa-04bbfe13a5dd,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-12,40.14,Resgate RDB,698de777-0de7-47d8-b62d-02a7f5e76b87,,2026-02-23_12-22-04__Seu extrato da conta Nu Empresas__19c8b17eb8960648__NU_3517837493_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-12,-133.51,Transferência enviada pelo Pix - PEDRO ANDRIETTA CHAGAS CONSULTORIA EM TECNOLOGIA D - 50.290.456/0001-01 - NU PAGAMENTOS - IP (0260) Agência: 1 Conta: 351783749-3,698de784-fd60-4b5f-a3a0-0f6cdad2a658,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-12,133.51,Transferência Recebida - Pedro Andrietta Chagas - •••.385.968-•• - NU PAGAMENTOS - IP (0260) Agência: 1 Conta: 13350437-8,698de785-25a0-4311-ab7f-bcdc5f76700b,,2026-02-23_12-22-04__Seu extrato da conta Nu Empresas__19c8b17eb8960648__NU_3517837493_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-12,-0.46,Transferência enviada pelo Pix - PEDRO ANDRIETTA CHAGAS CONSULTORIA EM TECNOLOGIA D - 50.290.456/0001-01 - NU PAGAMENTOS - IP (0260) Agência: 1 Conta: 351783749-3,698de7df-8b43-4394-8918-194da1d6154f,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-12,0.46,Transferência Recebida - Pedro Andrietta Chagas - •••.385.968-•• - NU PAGAMENTOS - IP (0260) Agência: 1 Conta: 13350437-8,698de7df-a1dd-4b75-ace8-86d2b048d545,,2026-02-23_12-22-04__Seu extrato da conta Nu Empresas__19c8b17eb8960648__NU_3517837493_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-12,-174.11,Pagamento de fatura,698de827-eb87-485c-b083-5b5ea874695f,,2026-02-23_12-22-04__Seu extrato da conta Nu Empresas__19c8b17eb8960648__NU_3517837493_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-12,-151.57,Pagamento de boleto efetuado - DAE JUNDIAI,698ded61-f3ab-4265-b33a-b95f4dc9030d,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,true,Água
+conta,2026-02-12,-120.53,Pagamento de boleto efetuado - DAE JUNDIAI,698ded7a-b66f-437d-9cb1-c0919011ca77,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-12,-219.78,Pagamento de boleto efetuado - DAE JUNDIAI,698dee73-3daf-4520-8e9c-1dc84dd3e00d,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-13,1000.00,Transferência recebida pelo Pix - SUL AMERICA COMPANHIA DE SEGURO SAUDE - 01.685.053/0001-56 - BCO SANTANDER (BRASIL) S.A. (0033) Agência: 3075 Conta: 13000105-3,698f6370-bf3b-47d6-8546-52533a6a72df,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-13,-17.97,Compra no débito - OXXO RAMOS BATISTA,698fa0f3-edb8-4464-9629-16f861a7972e,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,true,Alimentação
+cartao,2026-02-14,11.35,,,Doces Santa Rita,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-14,118.31,,,Drogaria Sao Paulo,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,true,Isabel
+cartao,2026-02-14,48.00,,,Mcs Estacionamento,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,true,Transporte
+cartao,2026-02-15,13.70,,,Auto Ban Jundiai,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,true,Transporte
+cartao,2026-02-15,144.14,,,Drogasil2573,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,true,Farmácia
+cartao,2026-02-15,90.00,,,Maternidade Star,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-16,122.48,,,Contabilizei Tecnologi,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+conta,2026-02-16,-300.00,Transferência enviada pelo Pix - Walquíria Aparecida Lemos - •••.808.178-•• - NU PAGAMENTOS - IP (0260) Agência: 1 Conta: 21524271-4,6993759c-acfd-4862-b0eb-ca04945e4238,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-16,-120.00,Transferência enviada pelo Pix - ISABEL APARECIDA ORTIGOSA - •••.674.598-•• - ITAÚ UNIBANCO S.A. (0341) Agência: 796 Conta: 42407-5,699375f0-0c09-407a-9235-7e2c435417d7,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+cartao,2026-02-17,53.90,,,Dl*Google Youtub,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+conta,2026-02-17,-1592.61,Transferência enviada pelo Pix - GESTAO SFZ FACIL LTDA - 65.153.794/0001-79 - PICPAY (0380) Agência: 1 Conta: 131610016-2,6994932e-4528-408a-924d-333f6c449191,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-17,-7.89,Compra no débito - TwConveniencia,69949753-5c1e-46d3-b4da-09d48d4c1ec4,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,true,Alimentação
+cartao,2026-02-18,39.73,,,Amazon - Parcela 1/3,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-18,146.64,,,Amazon Marketplace - Parcela 1/4,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-18,0.95,,,IOF de compra internacional,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-18,27.22,,,Openai,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-19,95.99,,,Dl*Google Chatgp,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-19,174.08,,,Drogaria Sao Paulo - NuPay,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,true,Isabel
+conta,2026-02-19,-55.00,Transferência enviada pelo Pix - ROSELY CARREIRO DUBINIAK                 - •••.633.488-•• - BCO BRADESCO S.A. Agência: 1962 Conta: 600837-2,69975ede-eaa8-41f7-9280-12d5501a21e1,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+cartao,2026-02-20,-1086.49,,,Pagamento recebido,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+conta,2026-02-20,-1086.49,Pagamento de fatura,69987dc6-3783-4a2f-92dd-7bd505d7755e,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-20,-6.44,Compra no débito - TwConveniencia,6998b88f-51fd-471a-b7b1-f79cf9f37f1a,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,true,Alimentação
+conta,2026-02-20,-29.99,Compra no débito - REDE FARMA POLLI,6998ca4c-6bd9-40f8-b56d-69542e23cefc,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-20,-19.54,Compra no débito - PAES DOCES E LANCHES M,6998cb68-90a0-45f7-8c80-08f0f50a5935,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,true,Fretado
+cartao,2026-02-21,39.73,,,Amazon - Parcela 2/3,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-21,39.73,,,Amazon - Parcela 3/3,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-21,146.62,,,Amazon Marketplace - Parcela 2/4,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-21,146.62,,,Amazon Marketplace - Parcela 3/4,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-21,146.62,,,Amazon Marketplace - Parcela 4/4,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-21,-0.99,,,Desconto Antecipação,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-21,-7.30,,,Desconto Antecipação,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-21,212.79,,,Mercadolivre*Mercadol,2026-02-23_12-22-19__Extrato da fatura do Cartão Nubank__19c8b181df0b76f9__Nubank_2026-03-10.csv,false,
+cartao,2026-02-21,-511.03,,,Pagamento recebido,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+conta,2026-02-21,-511.03,Pagamento de fatura,6999e753-fa56-4182-a5da-d098051c98cd,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-21,-4208.03,Transferência enviada pelo Pix - Daniel de Lima Chagas - •••.456.028-•• - ITAÚ UNIBANCO S.A. (0341) Agência: 4052 Conta: 3605-2,699a6f93-dee8-4dcc-875b-a847777d8cd7,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-21,-6767.00,Aplicação RDB,699a6fe1-47b3-4145-86b1-017ef5095b5d,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-21,-5000.00,Aplicação RDB,699a7041-a302-456d-8170-e8155451ec5b,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+conta,2026-02-22,-3997.53,Aplicação RDB,699a7200-ad86-4922-acaa-a8ca0df4620c,,2026-02-23_12-17-37__Extrato da sua conta do Nubank__19c8b13d77410e55__NU_133504378_01FEV2026_22FEV2026.csv,false,
+cartao,2026-02-23,9.90,,,Ebn*Xsolla,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,false,
+cartao,2026-02-23,365.31,,,Supermercado Jva,2026-02-23_12-20-06__Extrato da fatura do Cartão Nubank__19c8b161aaa916a1__Nubank_2026-03-10.csv,true,Alimentação

@@ -17,7 +17,12 @@ function normalizeLoadError(err) {
 }
 
 export default function Curation() {
-  const [meta, setMeta] = useState({ categories: [], stats: { pending: 0, excluded: 0, imported: 0, total: 0 } })
+  const [meta, setMeta] = useState({
+    categories: [],
+    expense_categories: [],
+    income_categories: [],
+    stats: { pending: 0, excluded: 0, imported: 0, total: 0 },
+  })
   const [rows, setRows] = useState([])
   const [view, setView] = useState('pending')
   const [sortBy, setSortBy] = useState('tx_date')
@@ -49,10 +54,19 @@ export default function Curation() {
     load()
   }, [load])
 
+  const expenseCategories = meta.expense_categories || meta.categories || []
+  const incomeCategories = meta.income_categories || []
+
   const stats = useMemo(() => {
     const pending = rows.filter((r) => r.status === 'pending').length
     const uncategorizedExpense = rows.filter((r) => r.status === 'pending' && r.direction === 'expense' && !r.category).length
-    return { pending, uncategorizedExpense }
+    const uncategorizedIncome = rows.filter((r) => r.status === 'pending' && r.direction === 'income' && !r.category).length
+    return {
+      pending,
+      uncategorizedExpense,
+      uncategorizedIncome,
+      uncategorizedTotal: uncategorizedExpense + uncategorizedIncome,
+    }
   }, [rows])
 
   async function updateRow(rowId, patch) {
@@ -68,30 +82,41 @@ export default function Curation() {
     }
   }
 
-  async function importPendingExpenses() {
-    const uncategorized = rows.filter((r) => r.status === 'pending' && r.direction === 'expense' && !r.category).length
-    const confirmMsg = uncategorized > 0
-      ? `Existem ${uncategorized} despesa(s) sem categoria. Elas serão ignoradas na importação. Continuar?`
-      : 'Importar despesas pendentes categorizadas para o razão final?'
+  async function importPendingTransactions() {
+    const missingParts = []
+    if (stats.uncategorizedExpense > 0) missingParts.push(`${stats.uncategorizedExpense} despesa(s)`)
+    if (stats.uncategorizedIncome > 0) missingParts.push(`${stats.uncategorizedIncome} receita(s)`)
+    const confirmMsg = missingParts.length > 0
+      ? `Existem ${missingParts.join(' e ')} sem categoria válida. Elas serão ignoradas na importação. Continuar?`
+      : 'Importar transações pendentes categorizadas para o razão final?'
     if (!window.confirm(confirmMsg)) return
 
     setImporting(true)
-    setImportStatus('Importando despesas...')
+    setImportStatus('Importando transações...')
     setError('')
     try {
-      const res = await api.inboxImportExpenses({ require_category: true })
+      const res = await api.inboxImport({ require_category: true })
       const months = Object.entries(res.imported_by_month || {})
-        .map(([month, count]) => `${month}: ${count}`)
+        .map(([month, counts]) => {
+          const expenseCount = counts?.expenses ?? 0
+          const incomeCount = counts?.incomes ?? 0
+          const total = counts?.total ?? (expenseCount + incomeCount)
+          const parts = []
+          if (expenseCount > 0) parts.push(`${expenseCount} desp.`)
+          if (incomeCount > 0) parts.push(`${incomeCount} rec.`)
+          return `${month}: ${total}${parts.length ? ` (${parts.join(', ')})` : ''}`
+        })
         .join(', ')
       setImportStatus(
-        `Importadas ${res.imported_expenses} despesas. ` +
+        `Importadas ${res.imported_transactions ?? 0} transações ` +
+        `(${res.imported_expenses ?? 0} despesas, ${res.imported_incomes ?? 0} receitas). ` +
         (months ? `Meses: ${months}. ` : '') +
         `Ignoradas sem categoria: ${res.skipped?.missing_category ?? 0}.`
       )
       await load()
     } catch (err) {
       setImportStatus('')
-      setError(err.message || 'Falha ao importar despesas.')
+      setError(err.message || 'Falha ao importar transações.')
     } finally {
       setImporting(false)
     }
@@ -102,7 +127,7 @@ export default function Curation() {
       <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between border-b border-[var(--border-color)] pb-6 mt-4">
         <div>
           <h1 className="text-4xl text-white tracking-tight leading-none" style={{ fontFamily: '"DM Serif Text", serif' }}>Inbox de Transações</h1>
-          <p className="text-[11px] text-[var(--text-muted)] mt-3 font-mono uppercase tracking-widest">API ingestão → revisar/excluir/categorizar → importar despesas</p>
+          <p className="text-[11px] text-[var(--text-muted)] mt-3 font-mono uppercase tracking-widest">API ingestão → revisar/excluir/categorizar → importar transações</p>
         </div>
         <button type="button" className="btn-ghost" onClick={load}>
           <span className="inline-flex items-center gap-2"><RefreshCw size={15} /> Atualizar</span>
@@ -158,12 +183,12 @@ export default function Curation() {
 
         <button
           type="button"
-          onClick={importPendingExpenses}
+          onClick={importPendingTransactions}
           disabled={importing}
           className="btn-primary w-full sm:w-auto sm:ml-auto"
         >
           <span className="inline-flex items-center gap-2">
-            {importing ? 'Importando...' : <><Upload size={14} /> Importar despesas</>}
+            {importing ? 'Importando...' : <><Upload size={14} /> Importar transações</>}
           </span>
         </button>
       </div>
@@ -197,9 +222,12 @@ export default function Curation() {
         </div>
       </div>
 
-      {stats.uncategorizedExpense > 0 && (
+      {stats.uncategorizedTotal > 0 && (
         <div className="status-warn px-4 py-3 text-xs">
-          {stats.uncategorizedExpense} despesa(s) pendente(s) sem categoria serão ignoradas na importação.
+          {stats.uncategorizedExpense > 0 && `${stats.uncategorizedExpense} despesa(s)`}
+          {stats.uncategorizedExpense > 0 && stats.uncategorizedIncome > 0 && ' e '}
+          {stats.uncategorizedIncome > 0 && `${stats.uncategorizedIncome} receita(s)`}
+          {' '}pendente(s) sem categoria válida serão ignoradas na importação.
         </div>
       )}
 
@@ -221,7 +249,9 @@ export default function Curation() {
         {!loading && rows.map((row) => {
           const busy = savingRow === row.id
           const isExpense = row.direction === 'expense'
-          const canCategorize = isExpense && row.status !== 'imported'
+          const isIncome = row.direction === 'income'
+          const canCategorize = row.status !== 'imported'
+          const categoryOptions = isIncome ? incomeCategories : expenseCategories
 
           return (
             <article key={row.id} className={`panel p-4 sm:p-6 flex flex-col gap-4 transition-all ${row.status === 'excluded' ? 'opacity-50 grayscale' : ''}`}>
@@ -243,7 +273,7 @@ export default function Curation() {
 
               <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 items-center">
                 <div>
-                  <label className="label block mb-1.5">Categoria (despesa)</label>
+                  <label className="label block mb-1.5">Categoria {isIncome ? '(receita)' : '(despesa)'}</label>
                   <select
                     className="input-field"
                     value={row.category || ''}
@@ -251,7 +281,7 @@ export default function Curation() {
                     onChange={(event) => updateRow(row.id, { category: event.target.value, status: row.status === 'excluded' ? 'pending' : row.status })}
                   >
                     <option value="">Sem categoria</option>
-                    {(meta.categories || []).map((cat) => <option key={cat} value={cat}>{cat}</option>)}
+                    {categoryOptions.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
                   </select>
                 </div>
 

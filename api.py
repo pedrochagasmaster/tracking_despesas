@@ -32,6 +32,12 @@ _BUDGET_MIGRATED = False
 _INBOX_MIGRATION_LOCK = threading.Lock()
 _INBOX_MIGRATED = False
 _DB_WRITE_LOCK = threading.Lock()
+INCOME_CATEGORY_OPTIONS = ("Salário", "Reembolso")
+INCOME_CATEGORY_CANONICAL = {
+    "salário": "Salário",
+    "salario": "Salário",
+    "reembolso": "Reembolso",
+}
 
 app = FastAPI(title="Tracking Despesas API")
 
@@ -54,6 +60,32 @@ def get_conn() -> sqlite3.Connection:
 
 def row_to_dict(row: sqlite3.Row) -> dict:
     return dict(row)
+
+
+def _normalize_inbox_category(direction: str | None, category: str | None) -> str | None:
+    raw = str(category or "").strip()
+    if not raw:
+        return None
+
+    if str(direction or "").strip().lower() == "income":
+        return INCOME_CATEGORY_CANONICAL.get(_normalize_text(raw))
+
+    return raw
+
+
+def _validate_inbox_category(direction: str | None, category: str | None) -> str | None:
+    raw = str(category or "").strip()
+    normalized = _normalize_inbox_category(direction, raw)
+    if str(direction or "").strip().lower() == "income" and raw and not normalized:
+        allowed = ", ".join(INCOME_CATEGORY_OPTIONS)
+        raise HTTPException(status_code=400, detail=f"Invalid income category: {raw}. Allowed: {allowed}")
+    return normalized
+
+
+def _serialize_inbox_row(row: sqlite3.Row) -> dict[str, Any]:
+    item = row_to_dict(row)
+    item["category"] = _normalize_inbox_category(item.get("direction"), item.get("category"))
+    return item
 
 
 def parse_month(value: str):
@@ -119,6 +151,43 @@ def latest_data_month() -> str:
     if not latest:
         return current_month()
     return str(latest)[:7]
+
+
+def _latest_data_date() -> str | None:
+    conn = get_conn()
+    row = conn.execute(
+        """
+        SELECT MAX(dt) AS latest FROM (
+            SELECT MAX(expense_date) AS dt FROM expenses
+            UNION ALL
+            SELECT MAX(income_date) AS dt FROM incomes
+        )
+        """
+    ).fetchone()
+    conn.close()
+    latest = row["latest"] if row else None
+    return str(latest) if latest else None
+
+
+def _api_meta() -> dict[str, Any]:
+    data_updated_at = datetime.fromtimestamp(DB_PATH.stat().st_mtime).replace(microsecond=0).isoformat() + "Z"
+    latest_date = _latest_data_date()
+    today = date.today()
+    stale = False
+    if latest_date:
+        try:
+            parsed = datetime.strptime(latest_date, "%Y-%m-%d").date()
+            stale = (today - parsed).days > 2
+        except ValueError:
+            stale = False
+
+    return {
+        "generated_at": _utc_now_iso(),
+        "data_updated_at": data_updated_at,
+        "latest_data_date": latest_date,
+        "latest_data_month": latest_data_month(),
+        "is_stale": stale,
+    }
 
 
 def _utc_now_iso() -> str:
@@ -529,7 +598,12 @@ def _find_counterpart_row(
 @app.get("/api/default-month")
 def default_month():
     month = latest_data_month()
-    return {"month": month, "budgets_month": month}
+    return {"month": month, "budgets_month": month, "meta": _api_meta()}
+
+
+@app.get("/api/system/meta")
+def system_meta():
+    return _api_meta()
 
 
 # ── Summary ────────────────────────────────────────────────────────────────────
@@ -582,7 +656,10 @@ def summary(month: str = Query(default=None)):
         "savings_rate": round(savings_rate, 1),
         "prev_income": prev_income,
         "prev_expenses": prev_expenses,
+        "prev_net": prev_income - prev_expenses,
+        "top_category": next(iter(dict(sorted(by_category.items(), key=lambda x: x[1], reverse=True)).items()), None),
         "spending_by_category": dict(sorted(by_category.items(), key=lambda x: x[1], reverse=True)),
+        "meta": _api_meta(),
     }
 
 
@@ -677,7 +754,10 @@ def budgets(month: str = Query(default=None)):
             "pct": round(min(spent / budgeted * 100, 100) if budgeted > 0 else 0, 1),
         })
     conn.close()
-    return sorted(result, key=lambda x: x["pct"], reverse=True)
+    return {
+        "items": sorted(result, key=lambda x: x["pct"], reverse=True),
+        "meta": _api_meta(),
+    }
 
 
 # ── Trends ───────────────────────────────────────────────────────────────────────
@@ -1183,7 +1263,7 @@ class InboxImportPayload(BaseModel):
 @app.get("/api/inbox/meta")
 def inbox_meta():
     conn = get_conn()
-    categories = _load_budget_categories()
+    expense_categories = _load_budget_categories()
     counts = conn.execute(
         """
         SELECT status, COUNT(*) AS c
@@ -1194,7 +1274,9 @@ def inbox_meta():
     conn.close()
     by_status = {row["status"]: int(row["c"]) for row in counts}
     return {
-        "categories": categories,
+        "categories": expense_categories,
+        "expense_categories": expense_categories,
+        "income_categories": list(INCOME_CATEGORY_OPTIONS),
         "stats": {
             "pending": by_status.get("pending", 0),
             "excluded": by_status.get("excluded", 0),
@@ -1274,7 +1356,7 @@ def inbox_transactions(
     return {
         "view": view,
         "total": len(rows),
-        "items": [row_to_dict(r) for r in rows],
+        "items": [_serialize_inbox_row(r) for r in rows],
     }
 
 
@@ -1292,9 +1374,10 @@ def inbox_update_transactions(payload: InboxUpdatePayload):
             if status not in {"pending", "excluded", "imported"}:
                 raise HTTPException(status_code=400, detail=f"Invalid status: {status}")
 
-            category = current["category"]
+            direction = str(current["direction"] or "").strip().lower()
+            category = _normalize_inbox_category(direction, current["category"])
             if update.category is not None:
-                category = update.category.strip()
+                category = _validate_inbox_category(direction, update.category)
 
             reason = current["exclude_reason"]
             if update.exclude_reason is not None:
@@ -1313,14 +1396,14 @@ def inbox_update_transactions(payload: InboxUpdatePayload):
     return {"status": "ok", "changed_rows": changed}
 
 
-@app.post("/api/inbox/import-expenses")
-def inbox_import_expenses(payload: InboxImportPayload):
+def _inbox_import_transactions(payload: InboxImportPayload):
     conn = get_conn()
-    imported = 0
+    imported_transactions = 0
+    imported_expenses = 0
+    imported_incomes = 0
     skipped_missing_category = 0
     skipped_duplicates = 0
-    skipped_not_expense = 0
-    by_month: dict[str, int] = defaultdict(int)
+    by_month: dict[str, dict[str, int]] = defaultdict(lambda: {"expenses": 0, "incomes": 0, "total": 0})
 
     rows = conn.execute(
         """
@@ -1331,22 +1414,70 @@ def inbox_import_expenses(payload: InboxImportPayload):
         """
     ).fetchall()
 
-    with _db_mutation(conn, "POST /api/inbox/import-expenses"):
+    with _db_mutation(conn, "POST /api/inbox/import"):
         for row in rows:
-            if row["direction"] != "expense":
-                skipped_not_expense += 1
-                continue
-
-            category = str(row["category"] or "").strip()
+            direction = str(row["direction"] or "").strip().lower()
+            category = _normalize_inbox_category(direction, row["category"])
             if payload.require_category and not category:
                 skipped_missing_category += 1
                 continue
             if not category:
                 category = "Sem Categoria"
 
+            month_key = row["tx_date"][:7]
+
+            if direction == "income":
+                exists = conn.execute(
+                    """
+                    SELECT id FROM incomes
+                    WHERE income_date = ?
+                      AND amount = ?
+                      AND description = ?
+                      AND category = ?
+                    """,
+                    (row["tx_date"], row["amount"], row["description"], category),
+                ).fetchone()
+                if exists:
+                    skipped_duplicates += 1
+                    conn.execute(
+                        """
+                        UPDATE inbox_transactions
+                        SET status = 'imported',
+                            imported_income_id = ?,
+                            updated_at = CURRENT_TIMESTAMP
+                        WHERE id = ?
+                        """,
+                        (exists["id"], row["id"]),
+                    )
+                    continue
+
+                cur = conn.execute(
+                    """
+                    INSERT INTO incomes (income_date, amount, description, category)
+                    VALUES (?, ?, ?, ?)
+                    """,
+                    (row["tx_date"], row["amount"], row["description"], category),
+                )
+                imported_transactions += 1
+                imported_incomes += 1
+                by_month[month_key]["incomes"] += 1
+                by_month[month_key]["total"] += 1
+
+                conn.execute(
+                    """
+                    UPDATE inbox_transactions
+                    SET status = 'imported',
+                        imported_income_id = ?,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE id = ?
+                    """,
+                    (cur.lastrowid, row["id"]),
+                )
+                continue
+
             exists = conn.execute(
                 """
-                SELECT 1 FROM expenses
+                SELECT id FROM expenses
                 WHERE expense_date = ?
                   AND amount = ?
                   AND description = ?
@@ -1360,10 +1491,12 @@ def inbox_import_expenses(payload: InboxImportPayload):
                 conn.execute(
                     """
                     UPDATE inbox_transactions
-                    SET status = 'imported', updated_at = CURRENT_TIMESTAMP
+                    SET status = 'imported',
+                        imported_expense_id = ?,
+                        updated_at = CURRENT_TIMESTAMP
                     WHERE id = ?
                     """,
-                    (row["id"],),
+                    (exists["id"], row["id"]),
                 )
                 continue
 
@@ -1374,8 +1507,10 @@ def inbox_import_expenses(payload: InboxImportPayload):
                 """,
                 (row["tx_date"], row["amount"], row["description"], category),
             )
-            imported += 1
-            by_month[row["tx_date"][:7]] += 1
+            imported_transactions += 1
+            imported_expenses += 1
+            by_month[month_key]["expenses"] += 1
+            by_month[month_key]["total"] += 1
 
             conn.execute(
                 """
@@ -1390,14 +1525,26 @@ def inbox_import_expenses(payload: InboxImportPayload):
     conn.close()
     return {
         "status": "ok",
-        "imported_expenses": imported,
+        "imported_transactions": imported_transactions,
+        "imported_expenses": imported_expenses,
+        "imported_incomes": imported_incomes,
         "imported_by_month": dict(sorted(by_month.items())),
         "skipped": {
             "missing_category": skipped_missing_category,
             "duplicates": skipped_duplicates,
-            "not_expense_direction": skipped_not_expense,
+            "not_expense_direction": 0,
         },
     }
+
+
+@app.post("/api/inbox/import")
+def inbox_import_transactions(payload: InboxImportPayload):
+    return _inbox_import_transactions(payload)
+
+
+@app.post("/api/inbox/import-expenses")
+def inbox_import_expenses(payload: InboxImportPayload):
+    return _inbox_import_transactions(payload)
 
 
 @app.post("/api/inbox/ingest")
@@ -1424,6 +1571,7 @@ def inbox_ingest(payload: InboxIngestPayload):
             description = str(entry.description or "").strip() or "Transação API"
             provider = str(entry.provider or "pluggy").strip().lower()
             external_id = str(entry.external_id).strip()
+            normalized_category = _normalize_inbox_category(direction, entry.category)
 
             exclusion = _detect_auto_exclusion(description, entry.raw_category or "")
             counterpart = _find_counterpart_row(conn, tx_date, amount, direction)
@@ -1466,7 +1614,7 @@ def inbox_ingest(payload: InboxIngestPayload):
                         signed_amount,
                         direction,
                         description,
-                        (entry.category or "").strip() or None,
+                        normalized_category,
                         (entry.raw_category or "").strip() or None,
                         (entry.account_type or "").strip() or None,
                         (entry.tx_type or "").strip() or None,
@@ -1497,7 +1645,7 @@ def inbox_ingest(payload: InboxIngestPayload):
                         signed_amount,
                         direction,
                         description,
-                        (entry.category or "").strip() or None,
+                        normalized_category,
                         (entry.raw_category or "").strip() or None,
                         (entry.account_type or "").strip() or None,
                         (entry.tx_type or "").strip() or None,

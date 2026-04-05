@@ -3,13 +3,14 @@ import { api } from '../api/client'
 import TrendChart from '../components/TrendChart'
 import SpendingDonut from '../components/SpendingDonut'
 import MonthPicker from '../components/MonthPicker'
-import { RefreshCw, TrendingUp, AlertCircle, Zap, PiggyBank } from 'lucide-react'
+import DataHealthBadge from '../components/DataHealthBadge'
+import StatePanel from '../components/StatePanel'
+import { RefreshCw, AlertCircle, Zap, PiggyBank } from 'lucide-react'
 import { currentMonthKey } from '../utils/date'
+import { currency, formatMonthLabel } from '../utils/format'
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts'
-
-const fmt = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v)
 
 function NetBarTooltip({ active, payload, label }) {
     if (!active || !payload?.length) return null
@@ -17,23 +18,34 @@ function NetBarTooltip({ active, payload, label }) {
     return (
         <div className="panel px-4 py-3 border-[var(--border-color)] flex flex-col gap-1">
             <div className="text-[10px] font-mono text-[var(--text-secondary)] uppercase tracking-widest">{label}</div>
-            <span style={{ color: net >= 0 ? '#9dad90' : '#ad9090', fontFamily: '"DM Serif Text", serif' }} className="text-lg">{fmt(net)}</span>
+            <span style={{ color: net >= 0 ? '#9dad90' : '#ad9090', fontFamily: '"DM Serif Text", serif' }} className="text-lg">{currency(net)}</span>
         </div>
     )
 }
 
-export default function Analytics() {
+export default function Analytics({ offlineBanner: OfflineBanner }) {
     const [month, setMonth] = useState(currentMonthKey)
     const [trends, setTrends] = useState([])
     const [summary, setSummary] = useState(null)
+    const [offlineInfo, setOfflineInfo] = useState([])
     const [loading, setLoading] = useState(true)
+    const [loadError, setLoadError] = useState('')
 
     useEffect(() => {
         if (!month) return
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setLoading(true)
+        setLoadError('')
         Promise.all([api.trends(12), api.summary(month)])
-            .then(([t, s]) => { setTrends(t); setSummary(s) })
+            .then(([t, s]) => {
+                setTrends(t)
+                setSummary(s)
+                setOfflineInfo([
+                    t?.__offline ? { cachedAt: t.__offlineCachedAt, source: t.__offlineSource } : null,
+                    s?.__offline ? { cachedAt: s.__offlineCachedAt, source: s.__offlineSource } : null,
+                ].filter(Boolean))
+            })
+            .catch((err) => setLoadError(err.message || 'Falha ao carregar análise financeira.'))
             .finally(() => setLoading(false))
     }, [month])
 
@@ -43,6 +55,7 @@ export default function Analytics() {
     const avgSavingsRate = savingsRates.length ? savingsRates.reduce((a, b) => a + b, 0) / savingsRates.length : 0
 
     const netData = trends.map(t => ({ ...t, netColor: t.net >= 0 ? '#9dad90' : '#ad9090' }))
+    const monthLabel = formatMonthLabel(month)
 
     const topSpike = (() => {
         if (trends.length < 2) return null
@@ -55,19 +68,35 @@ export default function Analytics() {
 
     return (
         <div className="space-y-6 animate-fade-in">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between border-b border-[var(--border-color)] pb-6 mt-4">
-                <div>
-                    <h1 className="text-4xl text-white tracking-tight leading-none" style={{ fontFamily: '"DM Serif Text", serif' }}>Análise Financeira</h1>
-                    <p className="text-[11px] text-[var(--text-muted)] mt-3 font-mono uppercase tracking-widest">Tendências e insights dos últimos 12 meses</p>
+            <div className="flex flex-col gap-4 border-b border-[var(--border-color)] pb-6 mt-4">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                        <h1 className="text-4xl text-white tracking-tight leading-none" style={{ fontFamily: '"DM Serif Text", serif' }}>Análise Financeira</h1>
+                        <p className="text-sm text-[var(--text-secondary)] mt-3">Tendência, comparação e concentração de gastos. Menos “insight mágico”, mais leitura útil.</p>
+                    </div>
+                    {month && <MonthPicker value={month} onChange={setMonth} className="w-full sm:w-auto justify-center sm:justify-start" />}
                 </div>
-                {month && <MonthPicker value={month} onChange={setMonth} className="w-full sm:w-auto justify-center sm:justify-start" />}
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="stat-chip">Competência: {monthLabel}</div>
+                    {summary?.meta && <DataHealthBadge meta={summary.meta} />}
+                </div>
             </div>
+
+            {offlineInfo.length > 0 && OfflineBanner ? <OfflineBanner sources={offlineInfo} /> : null}
 
             {loading && (
                 <div className="flex items-center justify-center h-40"><RefreshCw size={24} className="text-violet-500 animate-spin" /></div>
             )}
 
-            {!loading && (
+            {!loading && loadError && (
+                <StatePanel
+                    kind="error"
+                    title="Falha ao carregar análise financeira"
+                    description={loadError}
+                />
+            )}
+
+            {!loading && !loadError && (
                 <>
                     {/* KPI insights */}
                     <div className="space-y-4">
@@ -78,11 +107,11 @@ export default function Analytics() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
                             <div className="panel p-6 border-t-2 border-t-[#333]">
                                 <div className="label mb-2" style={{ fontFamily: '"Space Mono", monospace' }}>Despesa Média Mensal</div>
-                                <div className="text-3xl text-white" style={{ fontFamily: '"DM Serif Text", serif' }}>{fmt(avgExpenses)}</div>
+                                <div className="text-3xl text-white" style={{ fontFamily: '"DM Serif Text", serif' }}>{currency(avgExpenses)}</div>
                             </div>
                             <div className="panel p-6 border-t-2 border-t-[var(--color-income)]">
                                 <div className="label mb-2" style={{ fontFamily: '"Space Mono", monospace' }}>Receita Média Mensal</div>
-                                <div className="text-3xl text-[var(--color-income)]" style={{ fontFamily: '"DM Serif Text", serif' }}>{fmt(avgIncome)}</div>
+                                <div className="text-3xl text-[var(--color-income)]" style={{ fontFamily: '"DM Serif Text", serif' }}>{currency(avgIncome)}</div>
                             </div>
                             <div className="panel p-6 border-t-2 border-t-[var(--color-info)]">
                                 <div className="label mb-2" style={{ fontFamily: '"Space Mono", monospace' }}>Taxa Poupança Média</div>

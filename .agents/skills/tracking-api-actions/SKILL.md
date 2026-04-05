@@ -80,10 +80,12 @@ Use write actions when user asks to add/update financial records through API.
 
 - `add-expense --expense-date YYYY-MM-DD --amount N --category TEXT --description TEXT`
 - `add-income --income-date YYYY-MM-DD --amount N --category TEXT --description TEXT`
+- `add-installment --start-date YYYY-MM-DD --total-amount N --installments N --category TEXT --description TEXT`
 - `add-subscription --name TEXT --amount N --category TEXT --frequency monthly|yearly [--start-date YYYY-MM-DD]`
 - `set-budget --category TEXT --amount N`
 - `update-expense --id N --expense-date YYYY-MM-DD --amount N --category TEXT --description TEXT`
 - `delete-expense --id N`
+- `delete-installment --id N`
 - `update-budget --category TEXT --amount N`
 - `delete-budget --category TEXT`
 
@@ -96,7 +98,8 @@ After any write operation, run a related read action to verify persisted results
 - On API errors, include status code and response body in the output.
 - For bulk updates, run small batches and verify each batch with read calls.
 - If API is not reachable, run `./scripts/app_endpoint.py --mode auto --no-ui --pretty` and retry.
-- For expense edit/delete, only records with `kind=one_off` are mutable. Subscriptions/parcelados are protected.
+- For expense edit/delete, records with `kind=one_off` and `kind=installment` are mutable. `kind=subscription` remains protected.
+- Use `delete-installment` to remove a whole parcelado plan (parent + all parcelas) in one operation.
 
 ## Batch operations
 

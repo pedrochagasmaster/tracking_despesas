@@ -1,0 +1,4 @@
+interface:
+  display_name: "GOG Attachment Downloader"
+  short_description: "Download Gmail attachments with gog CLI."
+  default_prompt: "Use $gog-download-attachments to authenticate with gog, search Gmail, and bulk-download matching attachments with safe filenames."

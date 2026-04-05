@@ -1,21 +1,43 @@
 import { useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Sidebar from './components/Sidebar'
+import OfflineSnapshotBanner from './components/OfflineSnapshotBanner'
+import InstallPwaPopup from './components/InstallPwaPopup'
+import EnableNotificationsPopup from './components/EnableNotificationsPopup'
+import NotificationPreferencesCard from './components/NotificationPreferencesCard'
 import Overview from './pages/Overview'
 import Transactions from './pages/Transactions'
 import Subscriptions from './pages/Subscriptions'
 import Budgets from './pages/Budgets'
 import Analytics from './pages/Analytics'
 import Curation from './pages/Curation'
-import { Menu } from 'lucide-react'
+import { Menu, WifiOff } from 'lucide-react'
+import useOnlineStatus from './hooks/useOnlineStatus'
+import usePwaInstallPrompt from './hooks/usePwaInstallPrompt'
+import useFinanceReminders from './hooks/useFinanceReminders'
+import useNotificationPreferences from './hooks/useNotificationPreferences'
 
 export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const online = useOnlineStatus()
+  const pwaInstall = usePwaInstallPrompt()
+  const notificationPreferences = useNotificationPreferences()
+  const notifications = useFinanceReminders(online, notificationPreferences.prefs)
 
   return (
     <BrowserRouter>
       <div className="min-h-screen overflow-x-hidden bg-[#050505]">
-        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <Sidebar
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          footerContent={(
+            <NotificationPreferencesCard
+              permission={notifications.permission}
+              prefs={notificationPreferences.prefs}
+              onToggle={notificationPreferences.setPreference}
+            />
+          )}
+        />
         {sidebarOpen && (
           <button
             type="button"
@@ -38,17 +60,38 @@ export default function App() {
             </button>
           </div>
 
-          <div className="max-w-6xl mx-auto px-4 py-5 lg:p-8">
+          <div className="max-w-6xl mx-auto px-4 py-5 lg:p-8 space-y-4">
+            {!online && (
+              <div className="status-warn p-3 flex items-center gap-2 text-sm">
+                <WifiOff size={16} />
+                <span>Sem conexão agora. O app vai tentar usar os últimos dados salvos localmente.</span>
+              </div>
+            )}
+
             <Routes>
-              <Route path="/" element={<Overview />} />
-              <Route path="/transactions" element={<Transactions />} />
+              <Route path="/" element={<Overview offlineBanner={OfflineSnapshotBanner} />} />
+              <Route path="/transactions" element={<Transactions offlineBanner={OfflineSnapshotBanner} />} />
               <Route path="/subscriptions" element={<Subscriptions />} />
-              <Route path="/budgets" element={<Budgets />} />
-              <Route path="/analytics" element={<Analytics />} />
+              <Route path="/budgets" element={<Budgets offlineBanner={OfflineSnapshotBanner} />} />
+              <Route path="/analytics" element={<Analytics offlineBanner={OfflineSnapshotBanner} />} />
               <Route path="/inbox" element={<Curation />} />
               <Route path="/curation" element={<Curation />} />
             </Routes>
           </div>
+
+          <InstallPwaPopup
+            open={pwaInstall.open && pwaInstall.canInstall}
+            installing={pwaInstall.installing}
+            onInstall={pwaInstall.promptInstall}
+            onDismiss={pwaInstall.dismiss}
+          />
+
+          <EnableNotificationsPopup
+            open={notifications.openPrompt && notifications.permission === 'default'}
+            enabling={notifications.enabling}
+            onEnable={notifications.enable}
+            onDismiss={notifications.dismiss}
+          />
         </main>
       </div>
     </BrowserRouter>
