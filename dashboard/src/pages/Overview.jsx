@@ -176,8 +176,8 @@ export default function Overview({ offlineBanner: OfflineBanner }) {
     const topCategoryEntries = Object.entries(summary?.spending_by_category || {}).slice(0, 4)
     const totalCategorySpend = topCategoryEntries.reduce((acc, [, value]) => acc + value, 0)
     const offlineSources = [summary, trends, expenses]
-      .filter((item) => item?.__offline || item?.__offlineCachedAt)
-      .map((item) => ({ cachedAt: item.__offlineCachedAt, source: item.__offlineSource }))
+        .filter((item) => item?.__offline || item?.__offlineCachedAt)
+        .map((item) => ({ cachedAt: item.__offlineCachedAt, source: item.__offlineSource }))
 
     return (
         <div className="space-y-6 animate-fade-in">
@@ -284,7 +284,7 @@ export default function Overview({ offlineBanner: OfflineBanner }) {
                         <div className="section-title mb-1">Gasto por categoria</div>
                         <div className="section-subtitle">{monthLabel}</div>
                     </div>
-                    <div className="h-44">
+                    <div className="h-64">
                         <SpendingDonut data={summary?.spending_by_category} />
                     </div>
                     <div className="space-y-2 border-t border-[var(--border-color)] pt-4">
