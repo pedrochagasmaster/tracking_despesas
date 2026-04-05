@@ -712,33 +712,17 @@ def budgets(month: str = Query(default=None)):
     budget_rows = conn.execute("SELECT category, amount FROM budgets").fetchall()
     expense_rows = conn.execute(
         """
-        SELECT category, amount, kind, subscription_id
+        SELECT category, amount
         FROM expenses
         WHERE expense_date >= ? AND expense_date <= ?
         """,
         (start.isoformat(), end.isoformat()),
     ).fetchall()
-    subscription_freq = {
-        int(row["id"]): str(row["frequency"]).strip().lower()
-        for row in conn.execute("SELECT id, frequency FROM subscriptions").fetchall()
-        if row["id"] is not None
-    }
 
     actual: dict[str, float] = defaultdict(float)
     for r in expense_rows:
         category = str(r["category"] or "").strip()
         amount = float(r["amount"])
-
-        # Normalize subscription spend into budget buckets.
-        if str(r["kind"] or "").strip().lower() == "subscription":
-            freq = subscription_freq.get(int(r["subscription_id"])) if r["subscription_id"] is not None else None
-            if freq == "yearly":
-                category = "Assinaturas Anuais"
-            elif freq == "monthly":
-                category = "Assinaturas Mensais"
-            elif category.lower() == "assinaturas":
-                category = "Assinaturas Mensais"
-
         actual[category] += amount
 
     result = []

@@ -9,22 +9,39 @@ const fmtMonth = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', curr
 
 function AddSubModal({ onClose, onSave, initial = null }) {
     const editing = Boolean(initial)
+    const [categories, setCategories] = useState([])
     const [form, setForm] = useState(() => ({
         name: initial?.name ?? '',
         amount: initial?.amount != null ? String(initial.amount) : '',
-        category: initial?.category ?? 'Assinaturas',
+        category: initial?.category ?? '',
         frequency: initial?.frequency ?? 'monthly',
         start_date: initial?.start_date ?? new Date().toISOString().slice(0, 10),
         end_date: initial?.end_date ?? '',
         active: initial?.active ?? true,
     }))
+    const isExistingCategoryKnown = categories.includes(initial?.category)
+    const [customCategory, setCustomCategory] = useState(false)
+    const [newCategory, setNewCategory] = useState('')
+
+    useEffect(() => {
+        api.categories().then(setCategories).catch(() => { })
+    }, [])
+
+    useEffect(() => {
+        if (categories.length > 0 && initial?.category && !categories.includes(initial.category)) {
+            setCustomCategory(true)
+            setNewCategory(initial.category)
+        }
+    }, [categories, initial])
+
+    const effectiveCategory = customCategory ? newCategory.trim() : form.category
     function set(k, v) { setForm(f => ({ ...f, [k]: v })) }
     async function submit(e) {
         e.preventDefault()
         const body = {
             name: form.name,
             amount: parseFloat(form.amount),
-            category: form.category,
+            category: effectiveCategory,
             frequency: form.frequency,
             start_date: form.start_date,
             end_date: form.end_date || null,
@@ -50,7 +67,28 @@ function AddSubModal({ onClose, onSave, initial = null }) {
                     <div><label className="label block mb-1">Valor (R$)</label>
                         <input type="number" step="0.01" className="input-field" placeholder="0,00" value={form.amount} onChange={e => set('amount', e.target.value)} /></div>
                     <div><label className="label block mb-1">Categoria</label>
-                        <input className="input-field" value={form.category} onChange={e => set('category', e.target.value)} /></div>
+                        <select
+                            className="input-field"
+                            value={customCategory ? '__new__' : form.category}
+                            onChange={e => {
+                                if (e.target.value === '__new__') {
+                                    setCustomCategory(true)
+                                    set('category', '')
+                                } else {
+                                    setCustomCategory(false)
+                                    setNewCategory('')
+                                    set('category', e.target.value)
+                                }
+                            }}
+                        >
+                            <option value="">Selecione...</option>
+                            {categories.map((c) => <option key={c} value={c}>{c}</option>)}
+                            <option value="__new__">+ Nova categoria</option>
+                        </select>
+                        {customCategory && (
+                            <input className="input-field mt-2" placeholder="Nome da nova categoria" value={newCategory} onChange={e => setNewCategory(e.target.value)} />
+                        )}
+                    </div>
                     <div><label className="label block mb-1">Frequência</label>
                         <select className="input-field" value={form.frequency} onChange={e => set('frequency', e.target.value)}>
                             <option value="monthly">Mensal</option>
