@@ -284,7 +284,7 @@ export default function Overview({ offlineBanner: OfflineBanner }) {
                         <div className="section-title mb-1">Gasto por categoria</div>
                         <div className="section-subtitle">{monthLabel}</div>
                     </div>
-                    <div className="flex-1 min-h-[200px]">
+                    <div className="flex-1 min-h-[260px] mt-2 mb-2">
                         <SpendingDonut data={summary?.spending_by_category} />
                     </div>
                     <div className="space-y-2 border-t border-[var(--border-color)] pt-4 mt-2">

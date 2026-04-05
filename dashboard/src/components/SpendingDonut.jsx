@@ -37,9 +37,9 @@ export default function SpendingDonut({ data }) {
                 <Pie
                     data={items}
                     cx="50%"
-                    cy="45%"
-                    innerRadius="80%"
-                    outerRadius="100%"
+                    cy="50%"
+                    innerRadius="75%"
+                    outerRadius="95%"
                     paddingAngle={1}
                     dataKey="value"
                     stroke="none"
