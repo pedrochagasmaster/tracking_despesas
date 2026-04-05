@@ -38,8 +38,8 @@ export default function SpendingDonut({ data }) {
                     data={items}
                     cx="50%"
                     cy="45%"
-                    innerRadius="65%"
-                    outerRadius="80%"
+                    innerRadius="80%"
+                    outerRadius="100%"
                     paddingAngle={1}
                     dataKey="value"
                     stroke="none"
