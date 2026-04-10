@@ -78,3 +78,12 @@ Repository guidance for coding agents and contributors.
 - No deployment/infrastructure changes.
 - No frontend/UI work.
 - No destructive resets or reverting unrelated user changes.
+
+## Cursor Cloud specific instructions
+
+- **Python venv**: The project uses a venv at `/workspace/.venv`. Activate it with `source /workspace/.venv/bin/activate` before running any Python commands. The `PYTHON` Make variable should be set to `.venv/bin/python` when invoking Makefile targets (e.g., `PYTHON=.venv/bin/python make smoke`).
+- **uv**: The `uv` binary is at `~/.local/bin/uv`. Ensure `PATH` includes `$HOME/.local/bin` or invoke as `python3 -m uv`.
+- **Starting services**: API server: `source .venv/bin/activate && python tracking_despesas_server.py` (port 8000). Dashboard dev server: `npm --prefix dashboard run dev -- --host 0.0.0.0 --port 5173` (port 5173). Both should run in tmux sessions. The convenience launcher `./scripts/app_endpoint.py --mode auto --pretty` can also start both.
+- **SQLite DB**: `expenses.db` in workspace root. Initialize with `python expense_cli.py init` if it doesn't exist.
+- **Dashboard lint**: There is one pre-existing ESLint error (`canEditExpense` unused variable in `Transactions.jsx`). This is not introduced by agent changes.
+- **Validation**: `make test-cli` for CLI syntax checks, `make smoke` for end-to-end CLI flow, `npm --prefix dashboard run build` for frontend build verification. See the Validation checklist section above for details.
