@@ -10,7 +10,7 @@ import { currency, formatMonthLabel } from '../utils/format'
 const kindBadge = { one_off: 'badge-blue', subscription: 'badge-violet', installment: 'badge-yellow' }
 const kindLabel = { one_off: 'Avulso', subscription: 'Assinatura', installment: 'Parcelado' }
 
-function AddEntryModal({ onClose, onSave, categories = [] }) {
+function AddEntryModal({ onClose, onSave, expenseCategories = [], incomeCategories = [] }) {
   const [tab, setTab] = useState('expense')
   const today = new Date().toISOString().slice(0, 10)
   const [form, setForm] = useState({
@@ -25,14 +25,9 @@ function AddEntryModal({ onClose, onSave, categories = [] }) {
   })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
-  const [customCategory, setCustomCategory] = useState(false)
-  const [newCategory, setNewCategory] = useState('')
-
   function set(k, v) {
     setForm((f) => ({ ...f, [k]: v }))
   }
-
-  const effectiveCategory = customCategory ? newCategory.trim() : form.category
 
   async function submit(e) {
     e.preventDefault()
@@ -41,33 +36,33 @@ function AddEntryModal({ onClose, onSave, categories = [] }) {
     try {
       if (tab === 'expense') {
         const amount = parseFloat(form.amount)
-        if (!amount || !effectiveCategory || !form.description || !form.expense_date) throw new Error('Preencha todos os campos.')
+        if (!amount || !form.category || !form.description || !form.expense_date) throw new Error('Preencha todos os campos.')
         await api.addExpense({
           expense_date: form.expense_date,
           amount,
-          category: effectiveCategory,
+          category: form.category,
           description: form.description,
         })
       } else if (tab === 'income') {
         const amount = parseFloat(form.amount)
-        if (!amount || !effectiveCategory || !form.description || !form.income_date) throw new Error('Preencha todos os campos.')
+        if (!amount || !form.category || !form.description || !form.income_date) throw new Error('Preencha todos os campos.')
         await api.addIncome({
           income_date: form.income_date,
           amount,
-          category: effectiveCategory,
+          category: form.category,
           description: form.description,
         })
       } else {
         const totalAmount = parseFloat(form.total_amount)
         const installments = parseInt(form.installments, 10)
-        if (!totalAmount || !installments || !effectiveCategory || !form.description || !form.installment_start_date) {
+        if (!totalAmount || !installments || !form.category || !form.description || !form.installment_start_date) {
           throw new Error('Preencha todos os campos do parcelado.')
         }
         await api.addInstallment({
           start_date: form.installment_start_date,
           total_amount: totalAmount,
           installments,
-          category: effectiveCategory,
+          category: form.category,
           description: form.description,
         })
       }
@@ -143,25 +138,14 @@ function AddEntryModal({ onClose, onSave, categories = [] }) {
             <label className="label block mb-1">Categoria</label>
             <select
               className="input-field"
-              value={customCategory ? '__new__' : form.category}
-              onChange={(e) => {
-                if (e.target.value === '__new__') {
-                  setCustomCategory(true)
-                  set('category', '')
-                } else {
-                  setCustomCategory(false)
-                  setNewCategory('')
-                  set('category', e.target.value)
-                }
-              }}
+              value={form.category}
+              onChange={(e) => set('category', e.target.value)}
             >
               <option value="">Selecione...</option>
-              {categories.map((c) => <option key={c} value={c}>{c}</option>)}
-              <option value="__new__">+ Nova categoria</option>
+              {(tab === 'income' ? incomeCategories : expenseCategories).map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
             </select>
-            {customCategory && (
-              <input className="input-field mt-2" placeholder="Nome da nova categoria" value={newCategory} onChange={(e) => setNewCategory(e.target.value)} />
-            )}
           </div>
           <div>
             <label className="label block mb-1">Descrição</label>
@@ -375,6 +359,7 @@ export default function Transactions({ offlineBanner: OfflineBanner }) {
   const netFiltered = totalIncomes - totalExpenses
   const monthLabel = formatMonthLabel(month)
   const hasFilters = Boolean(search) || (tab === 'expenses' && catFilter !== 'all')
+  const incomeCategories = meta?.income_categories || []
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -636,7 +621,8 @@ export default function Transactions({ offlineBanner: OfflineBanner }) {
       )}
       {showAddModal && (
         <AddEntryModal
-          categories={categories}
+          expenseCategories={categories}
+          incomeCategories={incomeCategories}
           onClose={() => setShowAddModal(false)}
           onSave={() => {
             setShowAddModal(false)

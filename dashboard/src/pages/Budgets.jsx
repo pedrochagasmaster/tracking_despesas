@@ -54,6 +54,7 @@ function BudgetModal({ initial, onClose, onSave }) {
     category: initial?.category ?? '',
     amount: initial ? String(initial.budgeted) : '',
   }))
+  const originalCategory = initial?.category ?? ''
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
@@ -73,7 +74,11 @@ function BudgetModal({ initial, onClose, onSave }) {
     setError('')
     try {
       if (editing) {
-        await api.updateBudget({ category: form.category, amount })
+        await api.updateBudget({
+          category: form.category,
+          amount,
+          previous_category: originalCategory,
+        })
       } else {
         await api.setBudget({ category: form.category, amount })
       }
@@ -94,7 +99,7 @@ function BudgetModal({ initial, onClose, onSave }) {
         </div>
         <form onSubmit={submit} className="space-y-3">
           <div><label className="label block mb-1">Categoria</label>
-            <input className="input-field" readOnly={editing} placeholder="ex: Alimentação" value={form.category} onChange={(e) => set('category', e.target.value)} /></div>
+            <input className="input-field" placeholder="ex: Alimentação" value={form.category} onChange={(e) => set('category', e.target.value)} /></div>
           <div><label className="label block mb-1">Orçamento (R$)</label>
             <input type="number" step="0.01" className="input-field" placeholder="0,00" value={form.amount} onChange={(e) => set('amount', e.target.value)} /></div>
           {error && <div className="text-xs text-red-400">{error}</div>}

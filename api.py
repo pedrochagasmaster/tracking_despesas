@@ -187,6 +187,7 @@ def _api_meta() -> dict[str, Any]:
         "latest_data_date": latest_date,
         "latest_data_month": latest_data_month(),
         "is_stale": stale,
+        "income_categories": list(INCOME_CATEGORY_OPTIONS),
     }
 
 
@@ -1129,6 +1130,12 @@ class BudgetIn(BaseModel):
     amount: float
 
 
+class BudgetUpdateIn(BaseModel):
+    category: str
+    amount: float
+    previous_category: str | None = None
+
+
 @app.post("/api/budgets")
 def set_budget(body: BudgetIn):
     conn = get_conn()
@@ -1143,19 +1150,41 @@ def set_budget(body: BudgetIn):
 
 
 @app.put("/api/budgets")
-def update_budget(body: BudgetIn):
+def update_budget(body: BudgetUpdateIn):
+    new_category = body.category.strip()
+    previous_category = (body.previous_category or body.category).strip()
+    if not new_category:
+        raise HTTPException(status_code=400, detail="Category is required")
+
     conn = get_conn()
     with _db_mutation(conn, "PUT /api/budgets"):
+        if new_category != previous_category:
+            existing = conn.execute(
+                "SELECT 1 FROM budgets WHERE category = ?",
+                (new_category,),
+            ).fetchone()
+            if existing:
+                raise HTTPException(status_code=400, detail="Budget category already exists")
+
         cur = conn.execute(
             """
             UPDATE budgets
-            SET amount = ?
+            SET category = ?, amount = ?
             WHERE category = ?
             """,
-            (body.amount, body.category.strip()),
+            (new_category, body.amount, previous_category),
         )
         if cur.rowcount == 0:
             raise HTTPException(status_code=404, detail="Budget not found")
+        if new_category != previous_category:
+            conn.execute(
+                """
+                UPDATE expenses
+                SET category = ?
+                WHERE category = ?
+                """,
+                (new_category, previous_category),
+            )
     conn.close()
     return {"status": "ok"}
 

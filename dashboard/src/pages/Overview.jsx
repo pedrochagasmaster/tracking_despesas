@@ -26,7 +26,7 @@ function AlertStrip({ icon, title, text, tone = 'info' }) {
     )
 }
 
-function AddModal({ onClose, onSave }) {
+function AddModal({ onClose, onSave, expenseCategories = [], incomeCategories = [] }) {
     const [tab, setTab] = useState('expense')
     const today = new Date().toISOString().slice(0, 10)
     const [form, setForm] = useState({
@@ -124,8 +124,16 @@ function AddModal({ onClose, onSave }) {
                     )}
                     <div>
                         <label className="label block mb-1">Categoria</label>
-                        <input className="input-field" placeholder="ex: Alimentação"
-                            value={form.category} onChange={e => set('category', e.target.value)} />
+                        <select
+                            className="input-field"
+                            value={form.category}
+                            onChange={e => set('category', e.target.value)}
+                        >
+                            <option value="">Selecione...</option>
+                            {(tab === 'income' ? incomeCategories : expenseCategories).map((c) => (
+                                <option key={c} value={c}>{c}</option>
+                            ))}
+                        </select>
                     </div>
                     <div>
                         <label className="label block mb-1">Descrição</label>
@@ -144,6 +152,8 @@ export default function Overview({ offlineBanner: OfflineBanner }) {
     const [summary, setSummary] = useState(null)
     const [trends, setTrends] = useState([])
     const [expenses, setExpenses] = useState([])
+    const [categories, setCategories] = useState([])
+    const [meta, setMeta] = useState(null)
     const [loading, setLoading] = useState(true)
     const [showModal, setShowModal] = useState(false)
     const [loadError, setLoadError] = useState('')
@@ -153,14 +163,18 @@ export default function Overview({ offlineBanner: OfflineBanner }) {
         setLoading(true)
         setLoadError('')
         try {
-            const [s, t, e] = await Promise.all([
+            const [s, t, e, c, m] = await Promise.all([
                 api.summary(month),
                 api.trends(7),
                 api.expenses(month),
+                api.categories(),
+                api.systemMeta(),
             ])
             setSummary(s)
             setTrends(t)
             setExpenses(e.slice(0, 8))
+            setCategories(c)
+            setMeta(m)
         } catch (err) {
             console.error(err)
             setLoadError(err.message || 'Falha ao carregar a visão geral.')
@@ -175,6 +189,7 @@ export default function Overview({ offlineBanner: OfflineBanner }) {
     const expenseDelta = pctDelta(summary?.expenses ?? 0, summary?.prev_expenses ?? 0)
     const topCategoryEntries = Object.entries(summary?.spending_by_category || {}).slice(0, 4)
     const totalCategorySpend = topCategoryEntries.reduce((acc, [, value]) => acc + value, 0)
+    const incomeCategories = meta?.income_categories || []
     const offlineSources = [summary, trends, expenses]
         .filter((item) => item?.__offline || item?.__offlineCachedAt)
         .map((item) => ({ cachedAt: item.__offlineCachedAt, source: item.__offlineSource }))
@@ -342,7 +357,14 @@ export default function Overview({ offlineBanner: OfflineBanner }) {
                 </div>
             </div>
 
-            {showModal && <AddModal onClose={() => setShowModal(false)} onSave={() => { setShowModal(false); load() }} />}
+            {showModal && (
+                <AddModal
+                    onClose={() => setShowModal(false)}
+                    onSave={() => { setShowModal(false); load() }}
+                    expenseCategories={categories}
+                    incomeCategories={incomeCategories}
+                />
+            )}
         </div>
     )
 }
