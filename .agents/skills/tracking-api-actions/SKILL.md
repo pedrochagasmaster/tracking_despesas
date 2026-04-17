@@ -73,6 +73,8 @@ Run read endpoints first when user asks to inspect state, trends, or totals.
 - `budgets [--month YYYY-MM]`
 - `trends [--months N]`
 - `categories`
+- `inbox-meta`
+- `inbox-transactions [--view pending|excluded|imported|all] [--limit N]`
 
 ### 2) Write data
 
@@ -88,6 +90,8 @@ Use write actions when user asks to add/update financial records through API.
 - `delete-installment --id N`
 - `update-budget --category TEXT --amount N`
 - `delete-budget --category TEXT`
+- `inbox-ingest --input payload.json`
+- `inbox-import [--allow-missing-category]`
 
 After any write operation, run a related read action to verify persisted results.
 

@@ -53,6 +53,22 @@ def build_parser() -> argparse.ArgumentParser:
 
     sub.add_parser("categories")
 
+    sub.add_parser("inbox-meta")
+
+    it = sub.add_parser("inbox-transactions")
+    it.add_argument("--view", choices=["pending", "excluded", "imported", "all"], default="pending")
+    it.add_argument("--limit", type=int, default=500)
+    it.add_argument("--date-from")
+    it.add_argument("--date-to")
+    it.add_argument("--sort-by", default="tx_date")
+    it.add_argument("--sort-dir", choices=["asc", "desc"], default="desc")
+
+    ii = sub.add_parser("inbox-import")
+    ii.add_argument("--allow-missing-category", action="store_true")
+
+    ing = sub.add_parser("inbox-ingest")
+    ing.add_argument("--input", required=True, help="JSON file containing {'entries': [...]} payload")
+
     ae = sub.add_parser("add-expense")
     ae.add_argument("--expense-date", required=True)
     ae.add_argument("--amount", type=float, required=True)
@@ -133,6 +149,31 @@ def main() -> int:
         res = request("GET", args.base, "/api/trends", {"months": args.months})
     elif a == "categories":
         res = request("GET", args.base, "/api/categories")
+    elif a == "inbox-meta":
+        res = request("GET", args.base, "/api/inbox/meta")
+    elif a == "inbox-transactions":
+        q = {
+            "view": args.view,
+            "limit": args.limit,
+            "sort_by": args.sort_by,
+            "sort_dir": args.sort_dir,
+        }
+        if args.date_from:
+            q["date_from"] = args.date_from
+        if args.date_to:
+            q["date_to"] = args.date_to
+        res = request("GET", args.base, "/api/inbox/transactions", q)
+    elif a == "inbox-import":
+        res = request(
+            "POST",
+            args.base,
+            "/api/inbox/import",
+            body={"require_category": not args.allow_missing_category},
+        )
+    elif a == "inbox-ingest":
+        with open(args.input, "r", encoding="utf-8") as handle:
+            body = json.load(handle)
+        res = request("POST", args.base, "/api/inbox/ingest", body=body)
     elif a == "add-expense":
         body = {
             "expense_date": args.expense_date,

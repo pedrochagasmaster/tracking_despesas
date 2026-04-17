@@ -83,6 +83,7 @@ export const api = {
     updateExpense: (id, body) => req(`/api/expenses/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
     deleteExpense: (id) => req(`/api/expenses/${id}`, { method: 'DELETE' }),
     addIncome: (body) => req('/api/incomes', { method: 'POST', body: JSON.stringify(body) }),
+    deleteIncome: (id) => req(`/api/incomes/${id}`, { method: 'DELETE' }),
     addSubscription: (body) => req('/api/subscriptions', { method: 'POST', body: JSON.stringify(body) }),
     updateSubscription: (id, body) => req(`/api/subscriptions/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
     deleteSubscription: (id) => req(`/api/subscriptions/${id}`, { method: 'DELETE' }),

@@ -275,6 +275,7 @@ export default function Transactions({ offlineBanner: OfflineBanner }) {
   const [actionError, setActionError] = useState('')
   const [editingExpense, setEditingExpense] = useState(null)
   const [busyExpenseId, setBusyExpenseId] = useState(null)
+  const [busyIncomeId, setBusyIncomeId] = useState(null)
   const [busyInstallmentId, setBusyInstallmentId] = useState(null)
   const [showAddModal, setShowAddModal] = useState(false)
   const [loadError, setLoadError] = useState('')
@@ -320,6 +321,27 @@ export default function Transactions({ offlineBanner: OfflineBanner }) {
     }
   }
 
+  async function onDeleteIncome(row) {
+    const isImported = Boolean(row.inbox_status === 'imported' || row.imported_income_id)
+    const ok = window.confirm(
+      isImported
+        ? `Excluir a receita "${row.description}" e movê-la de volta para a Inbox como excluída?`
+        : `Excluir permanentemente a receita "${row.description}"?`,
+    )
+    if (!ok) return
+
+    setBusyIncomeId(row.id)
+    setActionError('')
+    try {
+      await api.deleteIncome(row.id)
+      await load()
+    } catch (err) {
+      setActionError(err.message || 'Falha ao excluir receita.')
+    } finally {
+      setBusyIncomeId(null)
+    }
+  }
+
   async function onDeleteInstallmentGroup(row) {
     if (!row?.installment_id) return
     const label = row.installment_total ? `${row.installment_total} parcelas` : 'todas as parcelas'
@@ -342,6 +364,7 @@ export default function Transactions({ offlineBanner: OfflineBanner }) {
 
   function isBusyRow(row) {
     if (busyExpenseId === row.id) return true
+    if (busyIncomeId === row.id) return true
     return Boolean(row.installment_id) && busyInstallmentId === row.installment_id
   }
 
@@ -489,17 +512,19 @@ export default function Transactions({ offlineBanner: OfflineBanner }) {
               <div className={`font-mono text-lg ${tab === 'expenses' ? 'text-[var(--color-expense)]' : 'text-[var(--color-income)]'}`}>
                 {tab === 'expenses' ? '-' : '+'}{currency(row.amount)}
               </div>
-              {tab === 'expenses' && (
+              {(tab === 'expenses' || tab === 'incomes') && (
                 <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    disabled={isBusyRow(row)}
-                    onClick={() => setEditingExpense(row)}
-                    className="btn-ghost tap-target p-1.5 disabled:opacity-40"
-                    title="Editar"
-                  >
-                    <PenSquare size={14} />
-                  </button>
+                  {tab === 'expenses' && (
+                    <button
+                      type="button"
+                      disabled={isBusyRow(row)}
+                      onClick={() => setEditingExpense(row)}
+                      className="btn-ghost tap-target p-1.5 disabled:opacity-40"
+                      title="Editar"
+                    >
+                      <PenSquare size={14} />
+                    </button>
+                  )}
                   {row.kind === 'installment' && row.installment_id && (
                     <button
                       type="button"
@@ -514,7 +539,7 @@ export default function Transactions({ offlineBanner: OfflineBanner }) {
                   <button
                     type="button"
                     disabled={isBusyRow(row)}
-                    onClick={() => onDeleteExpense(row)}
+                    onClick={() => (tab === 'expenses' ? onDeleteExpense(row) : onDeleteIncome(row))}
                     className="btn-ghost tap-target p-1.5 text-[var(--color-expense)] hover:text-red-300 disabled:opacity-40"
                     title="Excluir"
                   >
@@ -538,7 +563,7 @@ export default function Transactions({ offlineBanner: OfflineBanner }) {
                 {tab === 'expenses' && <th className="table-header text-left hidden md:table-cell">Tipo</th>}
                 {tab === 'expenses' && <th className="table-header text-left hidden lg:table-cell">Parcela</th>}
                 <th className="table-header text-right">Valor</th>
-                {tab === 'expenses' && <th className="table-header text-right">Ações</th>}
+                <th className="table-header text-right">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#1a1a1a]">
@@ -560,9 +585,9 @@ export default function Transactions({ offlineBanner: OfflineBanner }) {
                   <td className={`table-cell text-right font-mono text-sm group-hover:opacity-80 ${tab === 'expenses' ? 'text-[var(--color-expense)]' : 'text-[var(--color-income)]'}`}>
                     {tab === 'expenses' ? '-' : '+'}{currency(row.amount)}
                   </td>
-                  {tab === 'expenses' && (
-                    <td className="table-cell text-right">
-                      <div className="inline-flex items-center gap-2">
+                  <td className="table-cell text-right">
+                    <div className="inline-flex items-center gap-2">
+                      {tab === 'expenses' && (
                         <button
                           type="button"
                           disabled={isBusyRow(row)}
@@ -572,29 +597,29 @@ export default function Transactions({ offlineBanner: OfflineBanner }) {
                         >
                           <PenSquare size={14} />
                         </button>
-                        {row.kind === 'installment' && row.installment_id && (
-                          <button
-                            type="button"
-                            disabled={isBusyRow(row)}
-                            onClick={() => onDeleteInstallmentGroup(row)}
-                            className="btn-ghost p-1.5 text-[var(--color-warn)] hover:text-yellow-200 disabled:opacity-40"
-                            title="Excluir parcelado inteiro"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        )}
+                      )}
+                      {tab === 'expenses' && row.kind === 'installment' && row.installment_id && (
                         <button
                           type="button"
                           disabled={isBusyRow(row)}
-                          onClick={() => onDeleteExpense(row)}
-                          className="btn-ghost p-1.5 text-[var(--color-expense)] hover:text-red-300 disabled:opacity-40"
-                          title="Excluir despesa"
+                          onClick={() => onDeleteInstallmentGroup(row)}
+                          className="btn-ghost p-1.5 text-[var(--color-warn)] hover:text-yellow-200 disabled:opacity-40"
+                          title="Excluir parcelado inteiro"
                         >
                           <Trash2 size={14} />
                         </button>
-                      </div>
-                    </td>
-                  )}
+                      )}
+                      <button
+                        type="button"
+                        disabled={isBusyRow(row)}
+                        onClick={() => (tab === 'expenses' ? onDeleteExpense(row) : onDeleteIncome(row))}
+                        className="btn-ghost p-1.5 text-[var(--color-expense)] hover:text-red-300 disabled:opacity-40"
+                        title={tab === 'expenses' ? 'Excluir despesa' : 'Excluir receita'}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -603,6 +628,7 @@ export default function Transactions({ offlineBanner: OfflineBanner }) {
         {!loading && displayRows.length > 0 && (
           <div className="px-4 py-3 border-t border-slate-800/40 flex justify-between items-center gap-2">
             {tab === 'expenses' && <span className="text-xs text-slate-500">Despesas avulsas e parcelas podem ser editadas/excluídas. Parcelados também podem ser excluídos em lote.</span>}
+            {tab === 'incomes' && <span className="text-xs text-slate-500">Receitas importadas voltam para a Inbox como excluídas. Receitas manuais são removidas permanentemente.</span>}
             <span className="text-xs text-slate-600 ml-auto">{displayRows.length} registros</span>
           </div>
         )}

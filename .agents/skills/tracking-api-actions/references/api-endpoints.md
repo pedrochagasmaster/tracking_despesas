@@ -47,6 +47,12 @@ For agents running outside the project directory, use absolute path:
 - `GET /api/categories`
   - Returns distinct expense categories.
 
+- `GET /api/inbox/meta`
+  - Returns inbox category options and counts by status.
+
+- `GET /api/inbox/transactions?view=pending|excluded|imported|all&limit=N`
+  - Returns inbox transactions for review/import workflows.
+
 ## Write operations
 
 - `POST /api/expenses`
@@ -109,6 +115,25 @@ For agents running outside the project directory, use absolute path:
 - `DELETE /api/budgets?category=TEXT`
   - Deletes an existing budget row.
 
+- `POST /api/inbox/ingest`
+  - Body:
+    - `entries` (array)
+    - each entry includes `provider`, `external_id`, `tx_date`, `amount`, `signed_amount`, `direction`, `description`, optional category/raw metadata fields.
+  - Returns:
+    - `inserted` count
+    - `updated` count
+    - `auto_excluded` count
+    - `deduplicated` count for overlapping sync rows that matched an already-known inbox transaction by transaction fingerprint.
+  - Idempotency:
+    - exact `(provider, external_id)` repeats preserve already `imported` or `excluded` triage state.
+    - fallback matching by provider/date/amount/direction/normalized description prevents Pluggy overlap windows from creating duplicate pending rows when external ids change.
+
+- `POST /api/inbox/import`
+  - Body:
+    - `require_category` (boolean, default true)
+  - Imports pending inbox rows into `expenses`/`incomes`.
+  - Duplicate pending inbox rows are linked to the existing ledger transaction instead of creating duplicate ledger rows.
+
 ## Script examples
 
 Use `scripts/api_action.py` from this skill folder:
@@ -117,6 +142,10 @@ Use `scripts/api_action.py` from this skill folder:
 python scripts/api_action.py default-month
 python scripts/api_action.py summary --month 2026-02
 python scripts/api_action.py expenses --month 2026-02 --limit 50
+python scripts/api_action.py inbox-meta
+python scripts/api_action.py inbox-transactions --view excluded --limit 50
+python scripts/api_action.py inbox-ingest --input pluggy_payload.json
+python scripts/api_action.py inbox-import
 python scripts/api_action.py add-expense --expense-date 2026-02-10 --amount 89.90 --category Alimentação --description "Supermercado"
 python scripts/api_action.py add-installment --start-date 2026-02-15 --total-amount 2400 --installments 12 --category Eletronicos --description "Notebook"
 python scripts/api_action.py set-budget --category Moradia --amount 5500

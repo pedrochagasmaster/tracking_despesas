@@ -572,6 +572,91 @@ def _detect_auto_exclusion(description: str, raw_category: str) -> str | None:
     return None
 
 
+def _inbox_dedupe_description_key(value: str | None) -> str:
+    text = _normalize_text(value)
+    text = re.sub(r"[^a-z0-9]+", " ", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def _find_duplicate_inbox_transaction(
+    conn: sqlite3.Connection,
+    provider: str,
+    tx_date: str,
+    amount: float,
+    direction: str,
+    description: str,
+) -> sqlite3.Row | None:
+    description_key = _inbox_dedupe_description_key(description)
+    if not description_key:
+        return None
+
+    candidates = conn.execute(
+        """
+        SELECT *
+        FROM inbox_transactions
+        WHERE provider = ?
+          AND tx_date = ?
+          AND amount = ?
+          AND direction = ?
+        ORDER BY
+          CASE status WHEN 'imported' THEN 0 WHEN 'excluded' THEN 1 ELSE 2 END,
+          id ASC
+        """,
+        (provider, tx_date, amount, direction),
+    ).fetchall()
+    for candidate in candidates:
+        if _inbox_dedupe_description_key(candidate["description"]) == description_key:
+            return candidate
+    return None
+
+
+def _find_existing_income_by_fingerprint(
+    conn: sqlite3.Connection,
+    income_date: str,
+    amount: float,
+    description: str,
+) -> sqlite3.Row | None:
+    description_key = _inbox_dedupe_description_key(description)
+    rows = conn.execute(
+        """
+        SELECT id, description
+        FROM incomes
+        WHERE income_date = ?
+          AND amount = ?
+        ORDER BY id ASC
+        """,
+        (income_date, amount),
+    ).fetchall()
+    for row in rows:
+        if _inbox_dedupe_description_key(row["description"]) == description_key:
+            return row
+    return None
+
+
+def _find_existing_expense_by_fingerprint(
+    conn: sqlite3.Connection,
+    expense_date: str,
+    amount: float,
+    description: str,
+) -> sqlite3.Row | None:
+    description_key = _inbox_dedupe_description_key(description)
+    rows = conn.execute(
+        """
+        SELECT id, description
+        FROM expenses
+        WHERE expense_date = ?
+          AND amount = ?
+          AND kind = 'one_off'
+        ORDER BY id ASC
+        """,
+        (expense_date, amount),
+    ).fetchall()
+    for row in rows:
+        if _inbox_dedupe_description_key(row["description"]) == description_key:
+            return row
+    return None
+
+
 def _find_counterpart_row(
     conn: sqlite3.Connection,
     tx_date: str,
@@ -687,7 +772,18 @@ def incomes(month: str = Query(default=None)):
     start, end = parse_month(month)
     conn = get_conn()
     rows = conn.execute(
-        "SELECT * FROM incomes WHERE income_date >= ? AND income_date <= ? ORDER BY income_date DESC",
+        """
+        SELECT
+            incomes.*,
+            inbox_transactions.id AS inbox_transaction_id,
+            inbox_transactions.status AS inbox_status,
+            inbox_transactions.imported_income_id
+        FROM incomes
+        LEFT JOIN inbox_transactions
+          ON inbox_transactions.imported_income_id = incomes.id
+        WHERE income_date >= ? AND income_date <= ?
+        ORDER BY income_date DESC, incomes.id DESC
+        """,
         (start.isoformat(), end.isoformat()),
     ).fetchall()
     conn.close()
@@ -963,6 +1059,37 @@ def add_income(body: IncomeIn):
             "INSERT INTO incomes (income_date, amount, description, category) VALUES (?, ?, ?, ?)",
             (body.income_date, body.amount, body.description.strip(), body.category.strip()),
         )
+    conn.close()
+    return {"status": "ok"}
+
+
+@app.delete("/api/incomes/{income_id}")
+def delete_income(income_id: int):
+    conn = get_conn()
+    income = conn.execute("SELECT id FROM incomes WHERE id = ?", (income_id,)).fetchone()
+    if not income:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Income not found")
+
+    linked_inbox = conn.execute(
+        "SELECT id FROM inbox_transactions WHERE imported_income_id = ?",
+        (income_id,),
+    ).fetchone()
+
+    with _db_mutation(conn, f"DELETE /api/incomes/{income_id}"):
+        conn.execute("DELETE FROM incomes WHERE id = ?", (income_id,))
+        if linked_inbox:
+            conn.execute(
+                """
+                UPDATE inbox_transactions
+                SET status = 'excluded',
+                    exclude_reason = 'manual_exclusion',
+                    imported_income_id = NULL,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+                """,
+                (linked_inbox["id"],),
+            )
     conn.close()
     return {"status": "ok"}
 
@@ -1391,6 +1518,17 @@ def inbox_update_transactions(payload: InboxUpdatePayload):
             category = _normalize_inbox_category(direction, current["category"])
             if update.category is not None:
                 category = _validate_inbox_category(direction, update.category)
+                if status == "imported":
+                    if direction == "income" and current["imported_income_id"]:
+                        conn.execute(
+                            "UPDATE incomes SET category = ? WHERE id = ?",
+                            (category, current["imported_income_id"]),
+                        )
+                    elif direction == "expense" and current["imported_expense_id"]:
+                        conn.execute(
+                            "UPDATE expenses SET category = ? WHERE id = ?",
+                            (category, current["imported_expense_id"]),
+                        )
 
             reason = current["exclude_reason"]
             if update.exclude_reason is not None:
@@ -1440,16 +1578,12 @@ def _inbox_import_transactions(payload: InboxImportPayload):
             month_key = row["tx_date"][:7]
 
             if direction == "income":
-                exists = conn.execute(
-                    """
-                    SELECT id FROM incomes
-                    WHERE income_date = ?
-                      AND amount = ?
-                      AND description = ?
-                      AND category = ?
-                    """,
-                    (row["tx_date"], row["amount"], row["description"], category),
-                ).fetchone()
+                exists = _find_existing_income_by_fingerprint(
+                    conn,
+                    row["tx_date"],
+                    row["amount"],
+                    row["description"],
+                )
                 if exists:
                     skipped_duplicates += 1
                     conn.execute(
@@ -1488,17 +1622,12 @@ def _inbox_import_transactions(payload: InboxImportPayload):
                 )
                 continue
 
-            exists = conn.execute(
-                """
-                SELECT id FROM expenses
-                WHERE expense_date = ?
-                  AND amount = ?
-                  AND description = ?
-                  AND category = ?
-                  AND kind = 'one_off'
-                """,
-                (row["tx_date"], row["amount"], row["description"], category),
-            ).fetchone()
+            exists = _find_existing_expense_by_fingerprint(
+                conn,
+                row["tx_date"],
+                row["amount"],
+                row["description"],
+            )
             if exists:
                 skipped_duplicates += 1
                 conn.execute(
@@ -1566,6 +1695,7 @@ def inbox_ingest(payload: InboxIngestPayload):
     inserted = 0
     updated = 0
     auto_excluded = 0
+    deduplicated = 0
 
     with _db_mutation(conn, "POST /api/inbox/ingest"):
         for entry in payload.entries:
@@ -1605,12 +1735,13 @@ def inbox_ingest(payload: InboxIngestPayload):
             exclude_reason = exclusion
 
             current = conn.execute(
-                "SELECT id, status FROM inbox_transactions WHERE provider = ? AND external_id = ?",
+                "SELECT * FROM inbox_transactions WHERE provider = ? AND external_id = ?",
                 (provider, external_id),
             ).fetchone()
 
             if current:
-                if current["status"] == "imported":
+                if current["status"] in {"imported", "excluded"}:
+                    deduplicated += 1
                     continue
                 conn.execute(
                     """
@@ -1642,6 +1773,44 @@ def inbox_ingest(payload: InboxIngestPayload):
                 if status == "excluded":
                     auto_excluded += 1
             else:
+                duplicate = _find_duplicate_inbox_transaction(
+                    conn,
+                    provider,
+                    tx_date,
+                    amount,
+                    direction,
+                    description,
+                )
+                if duplicate:
+                    if duplicate["status"] in {"imported", "excluded"}:
+                        deduplicated += 1
+                        continue
+                    conn.execute(
+                        """
+                        UPDATE inbox_transactions
+                        SET category = COALESCE(category, ?),
+                            raw_category = COALESCE(raw_category, ?),
+                            account_type = COALESCE(account_type, ?),
+                            tx_type = COALESCE(tx_type, ?),
+                            currency_code = COALESCE(currency_code, ?),
+                            meta_json = COALESCE(meta_json, ?),
+                            updated_at = CURRENT_TIMESTAMP
+                        WHERE id = ?
+                        """,
+                        (
+                            normalized_category,
+                            (entry.raw_category or "").strip() or None,
+                            (entry.account_type or "").strip() or None,
+                            (entry.tx_type or "").strip() or None,
+                            (entry.currency_code or "").strip() or None,
+                            entry.meta_json,
+                            duplicate["id"],
+                        ),
+                    )
+                    deduplicated += 1
+                    updated += 1
+                    continue
+
                 conn.execute(
                     """
                     INSERT INTO inbox_transactions (
@@ -1677,6 +1846,7 @@ def inbox_ingest(payload: InboxIngestPayload):
         "inserted": inserted,
         "updated": updated,
         "auto_excluded": auto_excluded,
+        "deduplicated": deduplicated,
     }
 
 

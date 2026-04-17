@@ -250,7 +250,6 @@ export default function Curation() {
           const busy = savingRow === row.id
           const isExpense = row.direction === 'expense'
           const isIncome = row.direction === 'income'
-          const canCategorize = row.status !== 'imported'
           const categoryOptions = isIncome ? incomeCategories : expenseCategories
 
           return (
@@ -277,7 +276,7 @@ export default function Curation() {
                   <select
                     className="input-field"
                     value={row.category || ''}
-                    disabled={!canCategorize || busy}
+                    disabled={busy}
                     onChange={(event) => updateRow(row.id, { category: event.target.value, status: row.status === 'excluded' ? 'pending' : row.status })}
                   >
                     <option value="">Sem categoria</option>
