@@ -11,7 +11,7 @@ import sqlite3
 import threading
 from contextlib import contextmanager
 from collections import defaultdict
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from pathlib import Path
 import shutil
 from typing import Any
@@ -169,15 +169,41 @@ def _latest_data_date() -> str | None:
     return str(latest) if latest else None
 
 
+def _latest_inbox_updated_at() -> str | None:
+    conn = get_conn()
+    row = conn.execute("SELECT MAX(updated_at) AS latest FROM inbox_transactions").fetchone()
+    conn.close()
+    latest = row["latest"] if row else None
+    return str(latest) if latest else None
+
+
+def _parse_sqlite_utc(value: str | None) -> datetime | None:
+    if not value:
+        return None
+    try:
+        return datetime.strptime(value, "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
+    except ValueError:
+        return None
+
+
+def _to_utc_iso(value: datetime) -> str:
+    return value.astimezone(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
 def _api_meta() -> dict[str, Any]:
-    data_updated_at = datetime.fromtimestamp(DB_PATH.stat().st_mtime).replace(microsecond=0).isoformat() + "Z"
+    data_updated_at = _to_utc_iso(datetime.fromtimestamp(DB_PATH.stat().st_mtime, tz=timezone.utc))
     latest_date = _latest_data_date()
-    today = date.today()
+    latest_sync_raw = _latest_inbox_updated_at()
+    latest_sync_dt = _parse_sqlite_utc(latest_sync_raw)
+    latest_sync_at = _to_utc_iso(latest_sync_dt) if latest_sync_dt else None
+    now_utc = datetime.now(timezone.utc)
     stale = False
-    if latest_date:
+    if latest_sync_dt:
+        stale = (now_utc - latest_sync_dt).days > 2
+    elif latest_date:
         try:
             parsed = datetime.strptime(latest_date, "%Y-%m-%d").date()
-            stale = (today - parsed).days > 2
+            stale = (now_utc.date() - parsed).days > 2
         except ValueError:
             stale = False
 
@@ -186,13 +212,14 @@ def _api_meta() -> dict[str, Any]:
         "data_updated_at": data_updated_at,
         "latest_data_date": latest_date,
         "latest_data_month": latest_data_month(),
+        "latest_sync_at": latest_sync_at,
         "is_stale": stale,
         "income_categories": list(INCOME_CATEGORY_OPTIONS),
     }
 
 
 def _utc_now_iso() -> str:
-    return datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _checkpoint_id() -> str:

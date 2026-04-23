@@ -9,7 +9,8 @@ export default function DataHealthBadge({ meta, className = '' }) {
   const Icon = offline ? DatabaseBackup : stale ? AlertTriangle : Database
   const tone = offline || stale ? 'status-warn' : 'status-info'
   const label = offline ? 'snapshot offline' : stale ? 'dados desatualizados' : 'dados atualizados'
-  const timeRef = offline ? meta.__offlineCachedAt : meta.data_updated_at
+  const syncRef = meta.latest_sync_at || meta.data_updated_at
+  const timeRef = offline ? meta.__offlineCachedAt : syncRef
 
   return (
     <div className={`inline-flex items-center gap-2 border px-3 py-2 text-xs font-mono uppercase tracking-wider ${tone} ${className}`}>
